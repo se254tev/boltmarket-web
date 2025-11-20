@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, TrendingUp, Users, Package, CheckCircle } from 'lucide-react';
-import { adminAPI } from '../services/api';
+import { moderationAPI, disputesAPI, analyticsAPI } from '../services/supabase';
 
 /**
  * Admin Dashboard - Content moderation, dispute resolution, and analytics
@@ -21,14 +21,14 @@ export const AdminDashboard = () => {
     setIsLoading(true);
     try {
       const [reportsResp, disputesResp, statsResp] = await Promise.all([
-        adminAPI.getReports(),
-        adminAPI.getDisputes(),
-        adminAPI.getStats(),
+        moderationAPI.getReports(),
+        disputesAPI.getUserDisputes(),
+        analyticsAPI.getPlatformStats(),
       ]);
 
       setReports(reportsResp.data || []);
       setDisputes(disputesResp.data || []);
-      setStats(statsResp.data?.[0] || {});
+      setStats(statsResp.data || {});
     } catch (error) {
       console.error('Error loading dashboard:', error);
     } finally {
@@ -182,7 +182,7 @@ const ModerationPanel = ({ reports, onReportsChange }) => {
   const handleModerate = async (reportId, action, reason) => {
     setIsProcessing(true);
     try {
-      const { data } = await adminAPI.updateReport(reportId, { status: 'resolved', action, reason });
+      const { data } = await moderationAPI.updateReport(reportId, { status: 'resolved', action, reason });
       
       // Update report list
       onReportsChange((prev) =>
@@ -334,7 +334,7 @@ const DisputeResolutionPanel = ({ disputes, onDisputesChange }) => {
   const handleResolveDispute = async (disputeId, resolutionText) => {
     setIsProcessing(true);
     try {
-      const { data } = await adminAPI.resolveDispute(disputeId, { status: 'resolved', resolution: resolutionText });
+      const { data } = await disputesAPI.resolveDispute(disputeId, { status: 'resolved', resolution: resolutionText });
       
       onDisputesChange((prev) =>
         prev.map((d) => (d.id === disputeId ? data : d))

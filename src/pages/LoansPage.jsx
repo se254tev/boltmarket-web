@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, CheckCircle, Clock } from 'lucide-react';
-import loansService, { calculateLoanDetails, getLoanProviders } from '../services/loans';
+import loansService, { calculateLoanDetails } from '../services/loans';
+import { loansAPI } from '../services/supabase';
 
 /**
  * Loans Page - Main entry point for soft loans feature
@@ -422,8 +423,8 @@ const LoanProviders = () => {
 
   const loadProviders = async () => {
     try {
-      const data = await getLoanProviders();
-      setProviders(data);
+      const resp = await loansAPI.getProviders();
+      setProviders(resp.data || []);
     } catch (error) {
       console.error('Error loading providers:', error);
     } finally {

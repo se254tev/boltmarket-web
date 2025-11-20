@@ -372,4 +372,104 @@ export const analyticsAPI = {
       .limit(30),
 };
 
+/**
+ * Favorites/Wishlist API
+ */
+export const favoritesAPI = {
+  // Get user's favorites
+  getFavorites: () =>
+    supabase
+      .from('favorites')
+      .select('*')
+      .order('created_at', { ascending: false }),
+
+  // Add item to favorites
+  addFavorite: (itemId) =>
+    supabase
+      .from('favorites')
+      .insert([{ item_id: itemId, created_at: new Date() }])
+      .select(),
+
+  // Remove from favorites
+  removeFavorite: (itemId) =>
+    supabase
+      .from('favorites')
+      .delete()
+      .eq('item_id', itemId),
+
+  // Check if item is favorited
+  isFavorite: (itemId) =>
+    supabase
+      .from('favorites')
+      .select('*')
+      .eq('item_id', itemId)
+      .single(),
+};
+
+/**
+ * Sellers API
+ */
+export const sellersAPI = {
+  // Get seller profile
+  getSellerProfile: (sellerId) =>
+    supabase
+      .from('users')
+      .select('*')
+      .eq('id', sellerId)
+      .single(),
+
+  // Get current user profile
+  getCurrentProfile: () =>
+    supabase
+      .from('users')
+      .select('*'),
+
+  // Get my listings
+  getMyListings: () =>
+    supabase
+      .from('listings')
+      .select('*')
+      .order('created_at', { ascending: false }),
+};
+
+/**
+ * Reviews API
+ */
+export const reviewsAPI = {
+  // Get reviews for an item
+  getItemReviews: (itemId) =>
+    supabase
+      .from('reviews')
+      .select('*')
+      .eq('listing_id', itemId)
+      .order('created_at', { ascending: false }),
+
+  // Create review
+  createReview: (data) =>
+    supabase
+      .from('reviews')
+      .insert([{ ...data, created_at: new Date() }])
+      .select(),
+};
+
+/**
+ * Categories API
+ */
+export const categoriesAPI = {
+  // Get all categories
+  getAllCategories: () =>
+    supabase
+      .from('categories')
+      .select('*')
+      .order('name'),
+
+  // Get items by category
+  getItemsByCategory: (categoryId) =>
+    supabase
+      .from('listings')
+      .select('*')
+      .eq('category_id', categoryId)
+      .order('created_at', { ascending: false }),
+};
+
 export default supabase;

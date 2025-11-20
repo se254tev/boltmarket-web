@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Modal from '../components/Modal';
-import { itemsAPI, usersAPI } from '../services/api';
+import { listingsAPI, sellersAPI } from '../services/supabase';
 
 /**
  * SellerDashboard Component
@@ -27,10 +27,10 @@ function SellerDashboard() {
     const load = async () => {
       setIsLoading(true);
       try {
-        const { data: listingsResp } = await usersAPI.getMyListings();
+        const { data: listingsResp } = await listingsAPI.getMyListings();
         setListings(listingsResp?.data || listingsResp || []);
 
-        const { data: sellerResp } = await usersAPI.getCurrentProfile();
+        const { data: sellerResp } = await sellersAPI.getCurrentProfile();
         setSeller(sellerResp?.data || sellerResp || null);
       } catch (err) {
         console.error('Seller dashboard load error', err);
@@ -58,7 +58,7 @@ function SellerDashboard() {
     }
 
     try {
-      const { data: created } = await itemsAPI.createItem(formData);
+      const { data: created } = await listingsAPI.createListing(formData);
       const createdItem = created?.data || created;
       setListings([createdItem, ...listings]);
     } catch (err) {
@@ -85,7 +85,7 @@ function SellerDashboard() {
 
   const handleSaveEdit = async () => {
     try {
-      const { data: updated } = await itemsAPI.updateItem(editingId, formData);
+      const { data: updated } = await listingsAPI.updateListing(editingId, formData);
       const updatedItem = updated?.data || updated;
       setListings(listings.map(l => l.id === editingId ? updatedItem : l));
     } catch (err) {
@@ -101,7 +101,7 @@ function SellerDashboard() {
   const handleDeleteListing = async (id) => {
     if (window.confirm('Are you sure you want to delete this listing?')) {
       try {
-        await itemsAPI.deleteItem(id);
+        await listingsAPI.deleteListing(id);
         setListings(listings.filter(l => l.id !== id));
       } catch (err) {
         console.error('Delete failed', err);

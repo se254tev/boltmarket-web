@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { itemsAPI, usersAPI, reviewsAPI } from '../services/api';
+import { listingsAPI, sellersAPI, reviewsAPI } from '../services/supabase';
 
 /**
  * ItemDetailsPage Component
@@ -23,7 +23,7 @@ function ItemDetailsPage() {
     const load = async () => {
       setIsLoading(true);
       try {
-        const { data: itemResp } = await itemsAPI.getItemById(id);
+        const { data: itemResp } = await listingsAPI.getListing(id);
         const fetchedItem = itemResp?.data || itemResp;
         setItem(fetchedItem);
 
@@ -34,8 +34,8 @@ function ItemDetailsPage() {
           'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=600&fit=crop',
         ].filter(Boolean));
 
-        if (fetchedItem?.sellerId) {
-          const { data: sellerResp } = await usersAPI.getSellerProfile(fetchedItem.sellerId);
+        if (fetchedItem?.seller_id) {
+          const { data: sellerResp } = await sellersAPI.getSellerProfile(fetchedItem.seller_id);
           setSeller(sellerResp?.data || sellerResp);
         }
 

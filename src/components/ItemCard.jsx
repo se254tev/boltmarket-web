@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { favoritesAPI } from '../services/api';
+import { favoritesAPI } from '../services/supabase';
 
 /**
  * ItemCard Component

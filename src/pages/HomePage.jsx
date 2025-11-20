@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import CategoryBadge from '../components/CategoryBadge';
 import ItemCard from '../components/ItemCard';
-import { itemsAPI, categoriesAPI } from '../services/api';
+import { listingsAPI, categoriesAPI } from '../services/supabase';
 import { useEffect } from 'react';
 
 /**
@@ -38,8 +38,8 @@ function HomePage() {
     const load = async () => {
       setIsLoading(true);
       try {
-        const [{ data: itemsResp }, { data: catsResp }] = await Promise.all([
-          itemsAPI.getAllItems({ limit: 6, sort: 'popular' }),
+        const [itemsResp, catsResp] = await Promise.all([
+          listingsAPI.getAllListings(),
           categoriesAPI.getAllCategories(),
         ]);
 

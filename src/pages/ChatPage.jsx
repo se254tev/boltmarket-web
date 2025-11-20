@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Plus } from 'lucide-react';
 import Chat from '../components/Chat';
-import { chatsAPI } from '../services/api';
+import { chatAPI } from '../services/supabase';
 
 /**
  * Chat Page - Manage conversations with buyers/sellers
@@ -20,7 +20,7 @@ export const ChatPage = ({ userId, userName }) => {
   const loadConversations = async () => {
     setIsLoading(true);
     try {
-      const resp = await chatsAPI.getConversations();
+      const resp = await chatAPI.getUserConversations(userId);
       setConversations(resp.data || []);
       if (resp.data?.length > 0) {
         setSelectedConversation(resp.data[0]);

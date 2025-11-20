@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ItemCard from '../components/ItemCard';
-import { itemsAPI, categoriesAPI } from '../services/api';
+import { listingsAPI, categoriesAPI } from '../services/supabase';
 
 /**
  * BrowsePage Component
@@ -39,8 +39,8 @@ function BrowsePage() {
         if (q) params.q = q;
         if (category) params.category = category;
 
-        const [{ data: itemsResp }, { data: catsResp }] = await Promise.all([
-          itemsAPI.getAllItems(params),
+        const [itemsResp, catsResp] = await Promise.all([
+          listingsAPI.getAllListings(),
           categoriesAPI.getAllCategories(),
         ]);
 
