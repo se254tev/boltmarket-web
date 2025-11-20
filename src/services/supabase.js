@@ -2,8 +2,8 @@
 // Replace SUPABASE_URL and SUPABASE_KEY with your actual credentials
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL || 'https://your-project.supabase.co';
-const SUPABASE_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || 'your-anon-key';
+const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL || 'https://ubbsxosmjgditxlleqal.supabase.co';
+const SUPABASE_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViYnN4b3NtamdkaXR4bGxlcWFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2MDI1ODcsImV4cCI6MjA3ODE3ODU4N30.sc_5wBgs7NblwVeJms3S-e9kIe5jpfa9vI2lBCo0OkA';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
