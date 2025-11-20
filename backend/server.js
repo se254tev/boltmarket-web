@@ -13,6 +13,7 @@ const escrowRoutes = require('./routes/escrow');
 const mpesaRoutes = require('./routes/mpesa');
 const loansRoutes = require('./routes/loans');
 const rewardsRoutes = require('./routes/rewards');
+const adminRoutes = require('./routes/admin');
 
 const errorHandler = require('./middleware/errorHandler');
 
@@ -34,6 +35,7 @@ app.use('/api/escrow', escrowRoutes);
 app.use('/api/mpesa', mpesaRoutes);
 app.use('/api/loans', loansRoutes);
 app.use('/api/rewards', rewardsRoutes);
+app.use('/api/admin', adminRoutes);
 
 app.use(errorHandler);
 

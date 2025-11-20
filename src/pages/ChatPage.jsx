@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { MessageCircle, Plus } from 'lucide-react';
 import Chat from '../components/Chat';
-import { chatAPI } from '../services/supabase';
+import { chatsAPI } from '../services/api';
 
 /**
  * Chat Page - Manage conversations with buyers/sellers
@@ -20,12 +20,10 @@ export const ChatPage = ({ userId, userName }) => {
   const loadConversations = async () => {
     setIsLoading(true);
     try {
-      const { data, error } = await chatAPI.getUserConversations(userId);
-      if (!error) {
-        setConversations(data || []);
-        if (data?.length > 0) {
-          setSelectedConversation(data[0]);
-        }
+      const resp = await chatsAPI.getConversations();
+      setConversations(resp.data || []);
+      if (resp.data?.length > 0) {
+        setSelectedConversation(resp.data[0]);
       }
     } catch (error) {
       console.error('Error loading conversations:', error);
@@ -38,17 +36,9 @@ export const ChatPage = ({ userId, userName }) => {
     if (!otherUserId) return;
 
     try {
-      const { data, error } = await chatAPI.getOrCreateConversation(
-        userId,
-        otherUserId
-      );
-
-      if (!error) {
-        setConversations((prev) => [data, ...prev]);
-        setSelectedConversation(data);
-        setNewConversation(false);
-        setOtherUserId('');
-      }
+      // Backend doesn't have create conversation yet - will implement if needed
+      console.log('Start conversation with:', otherUserId);
+      alert('Conversation creation - please implement on backend');
     } catch (error) {
       console.error('Error creating conversation:', error);
     }

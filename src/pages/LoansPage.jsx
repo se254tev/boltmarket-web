@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { DollarSign, TrendingUp, CheckCircle, Clock } from 'lucide-react';
-import loansService from '../services/loans';
+import loansService, { calculateLoanDetails, getLoanProviders } from '../services/loans';
 
 /**
  * Loans Page - Main entry point for soft loans feature
@@ -178,7 +178,7 @@ const LoanApplicationForm = ({ formData, onInputChange, onSubmit, isLoading }) =
   const handleAmountChange = (e) => {
     onInputChange(e);
     if (e.target.value) {
-      const details = loansService.calculateLoanDetails(
+      const details = calculateLoanDetails(
         parseFloat(e.target.value),
         18, // 18% annual rate example
         formData.requested_term_months
@@ -422,7 +422,7 @@ const LoanProviders = () => {
 
   const loadProviders = async () => {
     try {
-      const data = await loansService.getLoanProviders();
+      const data = await getLoanProviders();
       setProviders(data);
     } catch (error) {
       console.error('Error loading providers:', error);

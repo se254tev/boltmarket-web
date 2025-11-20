@@ -46,8 +46,13 @@ export const applyForLoan = async (data) => {
  * Get loan providers
  */
 export const getLoanProviders = async () => {
-  // Backend does not yet provide dedicated loan providers endpoint; return empty array or implement when available
-  return [];
+  try {
+    const resp = await loansAPI.getProviders();
+    return resp.data || [];
+  } catch (error) {
+    console.error('Error loading providers:', error);
+    return [];
+  }
 };
 
 /**

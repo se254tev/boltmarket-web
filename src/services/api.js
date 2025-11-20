@@ -135,6 +135,7 @@ export const mpesaAPI = {
 export const loansAPI = {
   apply: (data) => apiClient.post('/loans', data),
   getUserLoans: () => apiClient.get('/loans'),
+  getProviders: () => apiClient.get('/loans/providers'),
   approve: (id) => apiClient.post(`/loans/${id}/approve`),
 };
 
@@ -161,6 +162,17 @@ export const escrowAPI = {
  */
 export const rewardsAPI = {
   getMine: () => apiClient.get('/rewards/me'),
+};
+
+/**
+ * Admin API
+ */
+export const adminAPI = {
+  getReports: () => apiClient.get('/admin/reports'),
+  updateReport: (id, data) => apiClient.put(`/admin/reports/${id}`, data),
+  getDisputes: () => apiClient.get('/admin/disputes'),
+  resolveDispute: (id, data) => apiClient.put(`/admin/disputes/${id}`, data),
+  getStats: () => apiClient.get('/admin/stats'),
 };
 
 export default apiClient;

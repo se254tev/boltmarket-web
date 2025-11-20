@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AlertCircle, TrendingUp, Users, Package, CheckCircle } from 'lucide-react';
-import { moderationAPI, disputesAPI, analyticsAPI } from '../services/supabase';
+import { adminAPI } from '../services/api';
 
 /**
  * Admin Dashboard - Content moderation, dispute resolution, and analytics
@@ -20,15 +20,15 @@ export const AdminDashboard = () => {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [reportsData, disputesData, statsData] = await Promise.all([
-        moderationAPI.getReports(),
-        disputesAPI.getUserDisputes(''), // Admin sees all
-        analyticsAPI.getPlatformStats(),
+      const [reportsResp, disputesResp, statsResp] = await Promise.all([
+        adminAPI.getReports(),
+        adminAPI.getDisputes(),
+        adminAPI.getStats(),
       ]);
 
-      setReports(reportsData.data || []);
-      setDisputes(disputesData.data || []);
-      setStats(statsData.data || []);
+      setReports(reportsResp.data || []);
+      setDisputes(disputesResp.data || []);
+      setStats(statsResp.data?.[0] || {});
     } catch (error) {
       console.error('Error loading dashboard:', error);
     } finally {
@@ -94,12 +94,12 @@ const DashboardOverview = ({ stats, reports, disputes }) => {
         <StatCard
           icon={Package}
           label="Total Listings"
-          value={stats?.[0]?.total_listings || 0}
+          value={stats?.total_listings || 0}
         />
         <StatCard
           icon={Users}
           label="Active Users"
-          value={stats?.[0]?.active_users || 0}
+          value={stats?.active_users || 0}
         />
         <StatCard
           icon={AlertCircle}
@@ -182,11 +182,11 @@ const ModerationPanel = ({ reports, onReportsChange }) => {
   const handleModerate = async (reportId, action, reason) => {
     setIsProcessing(true);
     try {
-      const { data } = await moderationAPI.moderateReport(reportId, action, reason);
+      const { data } = await adminAPI.updateReport(reportId, { status: 'resolved', action, reason });
       
       // Update report list
       onReportsChange((prev) =>
-        prev.map((r) => (r.id === reportId ? data[0] : r))
+        prev.map((r) => (r.id === reportId ? data : r))
       );
       
       setSelectedReport(null);
@@ -334,10 +334,10 @@ const DisputeResolutionPanel = ({ disputes, onDisputesChange }) => {
   const handleResolveDispute = async (disputeId, resolutionText) => {
     setIsProcessing(true);
     try {
-      const { data } = await disputesAPI.resolveDispute(disputeId, resolutionText);
+      const { data } = await adminAPI.resolveDispute(disputeId, { status: 'resolved', resolution: resolutionText });
       
       onDisputesChange((prev) =>
-        prev.map((d) => (d.id === disputeId ? data[0] : d))
+        prev.map((d) => (d.id === disputeId ? data : d))
       );
       
       setSelectedDispute(null);

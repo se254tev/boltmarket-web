@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { favoritesAPI } from '../services/api';
 
 /**
  * ItemCard Component
@@ -16,11 +17,25 @@ import React, { useState } from 'react';
  */
 function ItemCard({ item, onFavorite }) {
   const [isFavorite, setIsFavorite] = useState(item?.isFavorite || false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleFavorite = (e) => {
+  const handleFavorite = async (e) => {
     e.preventDefault();
-    setIsFavorite(!isFavorite);
-    if (onFavorite) onFavorite(item.id);
+    setIsLoading(true);
+    try {
+      if (isFavorite) {
+        await favoritesAPI.removeFavorite(item.id);
+      } else {
+        await favoritesAPI.addFavorite(item.id);
+      }
+      setIsFavorite(!isFavorite);
+      if (onFavorite) onFavorite(item.id);
+    } catch (error) {
+      console.error('Error toggling favorite:', error);
+      alert('Failed to update favorite');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -43,7 +58,8 @@ function ItemCard({ item, onFavorite }) {
         {/* Favorite Button */}
         <button 
           onClick={handleFavorite}
-          className="absolute top-3 right-3 p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all"
+          disabled={isLoading}
+          className="absolute top-3 right-3 p-2 rounded-full bg-white shadow-md hover:shadow-lg transition-all disabled:opacity-50"
           title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
         >
           <svg 

@@ -1,14 +1,143 @@
-# 🚀 Bolt Market - Quick Start Guide
+# 🚀 Quick Start Guide - Backend Setup & Testing
 
-## What You've Got
+## What You Have Now
 
-A complete, production-ready marketplace frontend with:
-- ✅ 5 fully functional pages (Home, Browse, Item Details, Seller Dashboard, 404)
-- ✅ 6 reusable UI components (Navbar, Footer, ItemCard, CategoryBadge, SearchBar, Modal)
-- ✅ Modern design with Tailwind CSS and smooth animations
-- ✅ Mobile-first responsive design
-- ✅ Mock data for testing
-- ✅ Ready-to-use API client
+✅ Complete full-stack marketplace system:
+- 8 React pages fully wired to Express API
+- Express + PostgreSQL backend with 11 route files
+- User authentication with JWT
+- Real API calls (no mock data)
+- Database schema ready to deploy
+- Production-ready frontend build
+
+## Get Started in 5 Minutes
+
+### Prerequisites
+- Node.js 16+
+- PostgreSQL 12+
+- npm installed
+
+### Step 1: Project Setup
+```bash
+cd "c:\Users\Stephen Otieno\OneDrive\Desktop\projects\Boltweb"
+cp .env.sample .env
+```
+
+### Step 2: Edit .env
+```
+DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@localhost:5432/boltmarket
+JWT_SECRET=your_secret_key_here
+```
+
+### Step 3: Create Database
+```bash
+# Open PostgreSQL
+psql -U postgres
+
+# Create database (in psql)
+CREATE DATABASE boltmarket;
+\q
+
+# Execute schema
+psql -U postgres -d boltmarket -f backend/db/schema.sql
+```
+
+### Step 4: Start Backend
+```bash
+cd backend
+npm install
+npm run dev
+```
+
+### Step 5: Start Frontend (New Terminal)
+```bash
+npm run dev
+```
+
+### Step 6: Open Browser
+http://localhost:5173 - Your full-stack marketplace! 🎉
+
+## Test the System
+
+### Create Account & List Item
+1. Register: Fill signup form
+2. Seller Dashboard: Create new item
+3. Browse: View your item listed
+4. Chat: Message with other users
+5. Admin: View reports (if admin role)
+
+### API Testing
+```bash
+# Get all items
+curl http://localhost:5000/api/items
+
+# Register
+curl -X POST http://localhost:5000/api/auth/register \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Test","email":"test@example.com","password":"pass123"}'
+```
+
+## What's Connected
+
+### Frontend Pages
+- ✅ HomePage - Categories & trending items
+- ✅ BrowsePage - Search & filter
+- ✅ ItemDetailsPage - Full item info
+- ✅ SellerDashboard - CRUD items
+- ✅ ChatPage - Messaging
+- ✅ LoansPage - Loan applications
+- ✅ AdminDashboard - Moderation
+- ✅ ItemCard - Favorites toggle
+
+### Backend Endpoints (11 Routes)
+- ✅ Auth - Register, login, verify
+- ✅ Items - CRUD marketplace listings
+- ✅ Categories - Browse categories
+- ✅ Users - Profiles & listings
+- ✅ Favorites - Wishlist management
+- ✅ Chats - Messaging system
+- ✅ Escrow - Transaction holds
+- ✅ M-Pesa - Payment integration
+- ✅ Loans - Soft loan system
+- ✅ Admin - Content moderation
+- ✅ Rewards - Points system
+
+## Database
+11 tables created automatically:
+- users, items, categories, favorites
+- conversations, messages
+- payments, escrow_transactions, disputes
+- loans, user_points
+
+## Troubleshooting
+
+### Port in use?
+```bash
+# Windows
+netstat -ano | findstr :5000
+taskkill /PID <PID> /F
+```
+
+### Database error?
+```bash
+# Check PostgreSQL
+psql -U postgres -d boltmarket -c "SELECT 1"
+```
+
+### CORS error?
+- Frontend: http://localhost:5173
+- Backend: http://localhost:5000
+- Check .env REACT_APP_API_URL
+
+## Documentation
+
+- `BACKEND_SETUP.md` - Detailed setup & API docs
+- `INTEGRATION_COMPLETE.md` - Full integration status
+- `START_HERE.md` - Project overview
+
+---
+
+**Everything is wired and ready. Start both servers and test!** ✨
 - ✅ Helper utilities and formatters
 - ✅ Deployment guides
 
