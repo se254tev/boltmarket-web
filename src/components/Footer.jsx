@@ -41,13 +41,26 @@ function Footer() {
           <div>
             <h4 className="font-semibold text-white mb-4">Product</h4>
             <ul className="space-y-2">
-              {['Features', 'Pricing', 'Security', 'Blog'].map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-dark-400 hover:text-white transition-colors text-sm">
-                    {link}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <Link to="/features" className="text-dark-400 hover:text-white transition-colors text-sm">
+                  Features
+                </Link>
+              </li>
+              <li>
+                <Link to="/pricing" className="text-dark-400 hover:text-white transition-colors text-sm">
+                  Pricing
+                </Link>
+              </li>
+              <li>
+                <Link to="/security" className="text-dark-400 hover:text-white transition-colors text-sm">
+                  Security
+                </Link>
+              </li>
+              <li>
+                <Link to="/blog" className="text-dark-400 hover:text-white transition-colors text-sm">
+                  Blog
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -55,13 +68,26 @@ function Footer() {
           <div>
             <h4 className="font-semibold text-white mb-4">Company</h4>
             <ul className="space-y-2">
-              {['About Us', 'Careers', 'Press', 'Partners'].map((link) => (
-                <li key={link}>
-                  <a href="#" className="text-dark-400 hover:text-white transition-colors text-sm">
-                    {link}
-                  </a>
-                </li>
-              ))}
+              <li>
+                <Link to="/about" className="text-dark-400 hover:text-white transition-colors text-sm">
+                  About Us
+                </Link>
+              </li>
+              <li>
+                <Link to="/careers" className="text-dark-400 hover:text-white transition-colors text-sm">
+                  Careers
+                </Link>
+              </li>
+              <li>
+                <Link to="/press" className="text-dark-400 hover:text-white transition-colors text-sm">
+                  Press
+                </Link>
+              </li>
+              <li>
+                <Link to="/partners" className="text-dark-400 hover:text-white transition-colors text-sm">
+                  Partners
+                </Link>
+              </li>
             </ul>
           </div>
 

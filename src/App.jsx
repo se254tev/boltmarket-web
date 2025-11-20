@@ -10,6 +10,14 @@ import NotFoundPage from './pages/NotFoundPage';
 import LoansPage from './pages/LoansPage';
 import ChatPage from './pages/ChatPage';
 import AdminDashboard from './pages/AdminDashboard';
+import FeaturesPage from './pages/FeaturesPage';
+import PricingPage from './pages/PricingPage';
+import SecurityPage from './pages/SecurityPage';
+import BlogPage from './pages/BlogPage';
+import AboutPage from './pages/AboutPage';
+import CareersPage from './pages/CareersPage';
+import PressPage from './pages/PressPage';
+import PartnersPage from './pages/PartnersPage';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
@@ -51,6 +59,14 @@ function App() {
                 element={<ChatPage userId={currentUserId} userName="You" />}
               />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/features" element={<FeaturesPage />} />
+              <Route path="/pricing" element={<PricingPage />} />
+              <Route path="/security" element={<SecurityPage />} />
+              <Route path="/blog" element={<BlogPage />} />
+              <Route path="/about" element={<AboutPage />} />
+              <Route path="/careers" element={<CareersPage />} />
+              <Route path="/press" element={<PressPage />} />
+              <Route path="/partners" element={<PartnersPage />} />
               <Route path="*" element={<NotFoundPage />} />
             </Routes>
           </main>
