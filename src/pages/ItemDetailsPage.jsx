@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { mockItems, mockSeller } from '../data/mockData';
+import { itemsAPI, usersAPI, reviewsAPI } from '../services/api';
 
 /**
  * ItemDetailsPage Component
@@ -12,34 +12,45 @@ function ItemDetailsPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [quantity, setQuantity] = useState(1);
   const [activeImageIndex, setActiveImageIndex] = useState(0);
+  const [item, setItem] = useState(null);
+  const [seller, setSeller] = useState(null);
+  const [images, setImages] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  // Find item (in real app, fetch from API)
-  const item = mockItems.find(i => i.id === id) || mockItems[0];
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const { data: itemResp } = await itemsAPI.getItemById(id);
+        const fetchedItem = itemResp?.data || itemResp;
+        setItem(fetchedItem);
 
-  // Mock additional images
-  const images = [
-    item.image,
-    'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop',
-    'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=600&fit=crop',
-  ];
+        // images fallback
+        setImages([
+          fetchedItem?.image,
+          'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&h=600&fit=crop',
+          'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&h=600&fit=crop',
+        ].filter(Boolean));
 
-  // Mock reviews
-  const reviews = [
-    {
-      id: 1,
-      author: 'Alice Johnson',
-      rating: 5,
-      text: 'Excellent product! Arrived quickly and in perfect condition.',
-      date: '2024-01-10',
-    },
-    {
-      id: 2,
-      author: 'Bob Smith',
-      rating: 4,
-      text: 'Good quality, just as described. Highly recommend.',
-      date: '2024-01-08',
-    },
-  ];
+        if (fetchedItem?.sellerId) {
+          const { data: sellerResp } = await usersAPI.getSellerProfile(fetchedItem.sellerId);
+          setSeller(sellerResp?.data || sellerResp);
+        }
+
+        const { data: reviewsResp } = await reviewsAPI.getItemReviews(id);
+        setReviews(reviewsResp?.data || reviewsResp || []);
+      } catch (err) {
+        console.error('Item details load error', err);
+        setError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    load();
+  }, [id]);
 
   return (
     <div className="min-h-screen bg-white py-8">
@@ -89,8 +100,8 @@ function ItemDetailsPage() {
           <div className="lg:col-span-2">
             {/* Category & Title */}
             <div className="mb-6">
-              <span className="badge badge-primary mb-3 inline-block">{item.category}</span>
-              <h1 className="text-heading-2 mb-3">{item.title}</h1>
+                <span className="badge badge-primary mb-3 inline-block">{item?.category}</span>
+              <h1 className="text-heading-2 mb-3">{item?.title}</h1>
               
               {/* Rating */}
               <div className="flex items-center gap-4 mb-4">
@@ -99,7 +110,7 @@ function ItemDetailsPage() {
                     <svg
                       key={i}
                       className={`w-5 h-5 ${
-                        i < item.rating 
+                        i < (item?.rating || 0) 
                           ? 'text-yellow-400 fill-yellow-400' 
                           : 'text-dark-300'
                       }`}
@@ -118,8 +129,8 @@ function ItemDetailsPage() {
 
             {/* Price */}
             <div className="mb-8 pb-8 border-b border-dark-200">
-              <p className="text-4xl font-bold text-primary-600 mb-2">
-                ${item.price.toFixed(2)}
+                <p className="text-4xl font-bold text-primary-600 mb-2">
+                ${item?.price?.toFixed ? item.price.toFixed(2) : item?.price}
               </p>
               <p className="text-dark-600 text-sm">In stock: <span className="font-semibold text-dark-900">12+ items</span></p>
             </div>
@@ -190,12 +201,12 @@ function ItemDetailsPage() {
             <div className="card border-2 border-primary-100 bg-primary-50">
               <div className="card-base flex items-center gap-4">
                 <div className="w-16 h-16 rounded-full bg-gradient-primary flex items-center justify-center text-white text-2xl font-bold">
-                  {mockSeller.name.charAt(0)}
+                  {seller?.name?.charAt ? seller.name.charAt(0) : ''}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold text-dark-900">{mockSeller.name}</h3>
-                    {mockSeller.verified && (
+                    <h3 className="font-bold text-dark-900">{seller?.name}</h3>
+                    {seller?.verified && (
                       <svg className="w-5 h-5 text-emerald-500" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M6.267 3.455a3.066 3.066 0 001.745-2.126 3.066 3.066 0 00-3.58 3.907 3.067 3.067 0 001.835-1.781zm9.5 2.43a3.066 3.066 0 00-3.59-3.906 3.066 3.066 0 101.735 5.093 3.066 3.066 0 001.855-1.187zm7.023 6.828a4.084 4.084 0 01-7.6 3.742a4.084 4.084 0 015.744-5.425 4.084 4.084 0 011.856 1.683zm-8.651 4.991c-1.886 1.887-3.501 4.021-4.633 6.34a4.627 4.627 0 11-6.944-4.21 4.586 4.586 0 013.564 1.534 4.084 4.084 0 015.743 5.743 4.084 4.084 0 002.27-3.407z" clipRule="evenodd" />
                       </svg>

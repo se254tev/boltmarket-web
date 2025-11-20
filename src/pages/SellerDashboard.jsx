@@ -1,13 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Modal from '../components/Modal';
-import { mockListings, mockSeller } from '../data/mockData';
+import { itemsAPI, usersAPI } from '../services/api';
 
 /**
  * SellerDashboard Component
  * Seller dashboard for managing listings and creating new ones
  */
 function SellerDashboard() {
-  const [listings, setListings] = useState(mockListings);
+  const [listings, setListings] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingId, setEditingId] = useState(null);
@@ -20,6 +20,27 @@ function SellerDashboard() {
   });
 
   const [filterStatus, setFilterStatus] = useState('all');
+  const [seller, setSeller] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const { data: listingsResp } = await usersAPI.getMyListings();
+        setListings(listingsResp?.data || listingsResp || []);
+
+        const { data: sellerResp } = await usersAPI.getCurrentProfile();
+        setSeller(sellerResp?.data || sellerResp || null);
+      } catch (err) {
+        console.error('Seller dashboard load error', err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    load();
+  }, []);
 
   const filteredListings = filterStatus === 'all' 
     ? listings 
@@ -30,22 +51,21 @@ function SellerDashboard() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleCreateListing = () => {
+  const handleCreateListing = async () => {
     if (!formData.title || !formData.price) {
       alert('Please fill in all required fields');
       return;
     }
 
-    const newListing = {
-      id: String(Date.now()),
-      ...formData,
-      status: 'active',
-      views: 0,
-      favorites: 0,
-      created: new Date().toISOString().split('T')[0],
-    };
-
-    setListings([newListing, ...listings]);
+    try {
+      const { data: created } = await itemsAPI.createItem(formData);
+      const createdItem = created?.data || created;
+      setListings([createdItem, ...listings]);
+    } catch (err) {
+      console.error('Create listing failed', err);
+      alert('Failed to create listing');
+      return;
+    }
     setFormData({ title: '', price: '', category: 'Fashion', image: '', description: '' });
     setShowCreateModal(false);
   };
@@ -63,28 +83,38 @@ function SellerDashboard() {
     setShowEditModal(true);
   };
 
-  const handleSaveEdit = () => {
-    setListings(listings.map(l => 
-      l.id === editingId 
-        ? { ...l, ...formData }
-        : l
-    ));
+  const handleSaveEdit = async () => {
+    try {
+      const { data: updated } = await itemsAPI.updateItem(editingId, formData);
+      const updatedItem = updated?.data || updated;
+      setListings(listings.map(l => l.id === editingId ? updatedItem : l));
+    } catch (err) {
+      console.error('Update failed', err);
+      alert('Failed to update listing');
+      return;
+    }
     setFormData({ title: '', price: '', category: 'Fashion', image: '', description: '' });
     setEditingId(null);
     setShowEditModal(false);
   };
 
-  const handleDeleteListing = (id) => {
+  const handleDeleteListing = async (id) => {
     if (window.confirm('Are you sure you want to delete this listing?')) {
-      setListings(listings.filter(l => l.id !== id));
+      try {
+        await itemsAPI.deleteItem(id);
+        setListings(listings.filter(l => l.id !== id));
+      } catch (err) {
+        console.error('Delete failed', err);
+        alert('Failed to delete listing');
+      }
     }
   };
 
   const stats = [
     { label: 'Active Listings', value: listings.filter(l => l.status === 'active').length, icon: '📦' },
-    { label: 'Total Views', value: listings.reduce((sum, l) => sum + l.views, 0), icon: '👁' },
-    { label: 'Favorites', value: listings.reduce((sum, l) => sum + l.favorites, 0), icon: '❤️' },
-    { label: 'Items Sold', value: mockSeller.itemsSold, icon: '✓' },
+    { label: 'Total Views', value: listings.reduce((sum, l) => sum + (l.views || 0), 0), icon: '👁' },
+    { label: 'Favorites', value: listings.reduce((sum, l) => sum + (l.favorites || 0), 0), icon: '❤️' },
+    { label: 'Items Sold', value: seller?.itemsSold || 0, icon: '✓' },
   ];
 
   return (
@@ -95,7 +125,7 @@ function SellerDashboard() {
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 mb-10">
             <div>
               <h1 className="text-heading-2 mb-2">Seller Dashboard</h1>
-              <p className="text-body-lg text-dark-600">Welcome back, {mockSeller.name}!</p>
+              <p className="text-body-lg text-dark-600">Welcome back, {seller?.name}!</p>
             </div>
             <button 
               onClick={() => setShowCreateModal(true)}

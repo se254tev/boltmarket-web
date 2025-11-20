@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import ItemCard from '../components/ItemCard';
-import { mockItems, mockFilters } from '../data/mockData';
+import { itemsAPI, categoriesAPI } from '../services/api';
 
 /**
  * BrowsePage Component
@@ -10,9 +10,12 @@ import { mockItems, mockFilters } from '../data/mockData';
 function BrowsePage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [items, setItems] = useState(mockItems);
-  const [filteredItems, setFilteredItems] = useState(mockItems);
+  const [items, setItems] = useState([]);
+  const [filteredItems, setFilteredItems] = useState([]);
   const [favorites, setFavorites] = useState({});
+  const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   
   // Filter states
   const [selectedCategory, setSelectedCategory] = useState(searchParams.get('category') || null);
@@ -24,6 +27,37 @@ function BrowsePage() {
   // Pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
+
+  // Fetch items and categories on mount or when search params change
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const params = {};
+        const q = searchParams.get('q');
+        const category = searchParams.get('category');
+        if (q) params.q = q;
+        if (category) params.category = category;
+
+        const [{ data: itemsResp }, { data: catsResp }] = await Promise.all([
+          itemsAPI.getAllItems(params),
+          categoriesAPI.getAllCategories(),
+        ]);
+
+        const fetchedItems = itemsResp?.data || itemsResp || [];
+        setItems(fetchedItems);
+        setFilteredItems(fetchedItems);
+        setCategories(catsResp?.data || catsResp || []);
+      } catch (err) {
+        console.error('Browse load error', err);
+        setError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    load();
+  }, [searchParams]);
 
   // Apply filters whenever they change
   useEffect(() => {
@@ -125,7 +159,7 @@ function BrowsePage() {
               <div className="mb-6">
                 <h4 className="font-semibold text-dark-900 mb-3">Category</h4>
                 <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {mockFilters.categories.map((cat) => (
+                  {categories.map((cat) => (
                     <label key={cat.id} className="flex items-center gap-2 cursor-pointer">
                       <input 
                         type="checkbox"
@@ -144,7 +178,13 @@ function BrowsePage() {
               <div className="mb-6">
                 <h4 className="font-semibold text-dark-900 mb-3">Price</h4>
                 <div className="space-y-2">
-                  {mockFilters.priceRanges.map((range) => (
+                  {[
+                    { id: 1, label: 'Under $25', min: 0, max: 25 },
+                    { id: 2, label: '$25 - $50', min: 25, max: 50 },
+                    { id: 3, label: '$50 - $100', min: 50, max: 100 },
+                    { id: 4, label: '$100 - $250', min: 100, max: 250 },
+                    { id: 5, label: 'Over $250', min: 250, max: Infinity },
+                  ].map((range) => (
                     <label key={range.id} className="flex items-center gap-2 cursor-pointer">
                       <input 
                         type="radio"
@@ -163,7 +203,7 @@ function BrowsePage() {
               <div className="mb-6">
                 <h4 className="font-semibold text-dark-900 mb-3">Rating</h4>
                 <div className="space-y-2">
-                  {mockFilters.ratings.map((rating) => (
+                  {[{ id: 5, label: '5 Stars', value: 5 }, { id: 4, label: '4+ Stars', value: 4 }, { id: 3, label: '3+ Stars', value: 3 }].map((rating) => (
                     <label key={rating.id} className="flex items-center gap-2 cursor-pointer">
                       <input 
                         type="radio"

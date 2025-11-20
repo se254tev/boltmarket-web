@@ -1,9 +1,8 @@
 /**
  * Soft loans feature management
- * Users can apply for loans, providers set terms, and users track repayment
+ * Uses the backend loans API endpoints (via `src/services/api.js`).
  */
-
-import { loansAPI } from './supabase';
+import { loansAPI } from './api';
 
 export const LOAN_STATUS = {
   PENDING: 'pending',
@@ -35,18 +34,8 @@ export const applyForLoan = async (data) => {
   } = data;
 
   try {
-    const { data: loan, error } = await loansAPI.createLoanApplication({
-      borrower_id,
-      amount,
-      reason,
-      employment_status,
-      annual_income,
-      requested_term_months,
-      status: LOAN_STATUS.PENDING,
-    });
-
-    if (error) throw error;
-    return loan[0];
+    const resp = await loansAPI.apply({ amount, reason, employment_status, annual_income, requested_term_months: requested_term_months });
+    return resp.data;
   } catch (error) {
     console.error('Error applying for loan:', error);
     throw error;
@@ -57,14 +46,8 @@ export const applyForLoan = async (data) => {
  * Get loan providers
  */
 export const getLoanProviders = async () => {
-  try {
-    const { data: providers, error } = await loansAPI.getLoanProviders();
-    if (error) throw error;
-    return providers || [];
-  } catch (error) {
-    console.error('Error fetching loan providers:', error);
-    throw error;
-  }
+  // Backend does not yet provide dedicated loan providers endpoint; return empty array or implement when available
+  return [];
 };
 
 /**
@@ -72,9 +55,8 @@ export const getLoanProviders = async () => {
  */
 export const getUserLoans = async (userId) => {
   try {
-    const { data: loans, error } = await loansAPI.getLoanApplications(userId);
-    if (error) throw error;
-    return loans || [];
+    const resp = await loansAPI.getUserLoans();
+    return resp.data;
   } catch (error) {
     console.error('Error fetching user loans:', error);
     throw error;
@@ -93,22 +75,8 @@ export const approveLoan = async (loanId, approvalData) => {
   } = approvalData;
 
   try {
-    const { data: loan, error } = await loansAPI.updateLoanStatus(
-      loanId,
-      LOAN_STATUS.APPROVED
-    );
-
-    if (error) throw error;
-
-    // Store approval details
-    console.log('Loan approved:', {
-      approved_amount,
-      interest_rate,
-      term_months,
-      monthly_payment,
-    });
-
-    return loan[0];
+    const resp = await loansAPI.approve(loanId);
+    return resp.data;
   } catch (error) {
     console.error('Error approving loan:', error);
     throw error;
@@ -119,42 +87,16 @@ export const approveLoan = async (loanId, approvalData) => {
  * Reject loan application
  */
 export const rejectLoan = async (loanId, reason) => {
-  try {
-    const { data: loan, error } = await loansAPI.updateLoanStatus(
-      loanId,
-      LOAN_STATUS.REJECTED
-    );
-
-    if (error) throw error;
-
-    console.log('Loan rejected. Reason:', reason);
-    return loan[0];
-  } catch (error) {
-    console.error('Error rejecting loan:', error);
-    throw error;
-  }
+  // Not implemented yet - route can be added to backend
+  throw new Error('Reject loan not implemented on backend');
 };
 
 /**
  * Activate approved loan (disburse funds)
  */
 export const activateLoan = async (loanId) => {
-  try {
-    const { data: loan, error } = await loansAPI.updateLoanStatus(
-      loanId,
-      LOAN_STATUS.ACTIVE
-    );
-
-    if (error) throw error;
-
-    // In real system, this would trigger fund disbursement
-    console.log('Loan activated and funds disbursed');
-
-    return loan[0];
-  } catch (error) {
-    console.error('Error activating loan:', error);
-    throw error;
-  }
+  // Activation should be handled by backend
+  throw new Error('Activate loan must be handled by backend');
 };
 
 /**
@@ -167,23 +109,8 @@ export const recordRepayment = async (loanId, paymentData) => {
     transaction_id,
   } = paymentData;
 
-  try {
-    const { data: repayment, error } = await loansAPI.createRepayment({
-      loan_id: loanId,
-      amount,
-      payment_method,
-      transaction_id,
-      status: REPAYMENT_STATUS.PAID,
-      paid_date: new Date(),
-    });
-
-    if (error) throw error;
-
-    return repayment[0];
-  } catch (error) {
-    console.error('Error recording repayment:', error);
-    throw error;
-  }
+  // Repayment recording must be implemented server-side; not implemented in frontend service
+  throw new Error('Record repayment must be implemented on backend');
 };
 
 /**

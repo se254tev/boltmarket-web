@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import SearchBar from '../components/SearchBar';
 import CategoryBadge from '../components/CategoryBadge';
 import ItemCard from '../components/ItemCard';
-import { mockItems, mockCategories } from '../data/mockData';
+import { itemsAPI, categoriesAPI } from '../services/api';
+import { useEffect } from 'react';
 
 /**
  * HomePage Component
@@ -13,6 +14,10 @@ function HomePage() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [favorites, setFavorites] = useState({});
+  const [categories, setCategories] = useState([]);
+  const [trendingItems, setTrendingItems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSearch = ({ query, location }) => {
     // Navigate to browse page with search params
@@ -29,7 +34,27 @@ function HomePage() {
     }));
   };
 
-  const trendingItems = mockItems.slice(0, 6);
+  useEffect(() => {
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const [{ data: itemsResp }, { data: catsResp }] = await Promise.all([
+          itemsAPI.getAllItems({ limit: 6, sort: 'popular' }),
+          categoriesAPI.getAllCategories(),
+        ]);
+
+        setTrendingItems(itemsResp?.data || itemsResp || []);
+        setCategories(catsResp?.data || catsResp || []);
+      } catch (err) {
+        console.error('Home load error', err);
+        setError(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    load();
+  }, []);
 
   return (
     <>
@@ -83,7 +108,7 @@ function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {mockCategories.slice(0, 8).map((category) => (
+            {categories.slice(0, 8).map((category) => (
               <CategoryBadge
                 key={category.id}
                 name={category.name}
@@ -119,14 +144,20 @@ function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {trendingItems.map((item) => (
-              <div key={item.id} onClick={() => navigate(`/item/${item.id}`)}>
-                <ItemCard 
-                  item={{ ...item, isFavorite: favorites[item.id] }}
-                  onFavorite={handleFavorite}
-                />
-              </div>
-            ))}
+            {isLoading ? (
+              <div>Loading...</div>
+            ) : error ? (
+              <div className="text-red-600">Failed to load items</div>
+            ) : (
+              trendingItems.map((item) => (
+                <div key={item.id} onClick={() => navigate(`/item/${item.id}`)}>
+                  <ItemCard 
+                    item={{ ...item, isFavorite: favorites[item.id] }}
+                    onFavorite={handleFavorite}
+                  />
+                </div>
+              ))
+            )}
           </div>
         </div>
       </section>

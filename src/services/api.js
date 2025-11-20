@@ -121,4 +121,46 @@ export const reviewsAPI = {
   getSellerReviews: (sellerId) => apiClient.get(`/users/${sellerId}/reviews`),
 };
 
+/**
+ * MPesa API (proxied through backend)
+ */
+export const mpesaAPI = {
+  initiate: (data) => apiClient.post('/mpesa/stkpush', data),
+  status: (checkoutRequestId) => apiClient.post('/mpesa/status', { checkoutRequestId }),
+};
+
+/**
+ * Loans API
+ */
+export const loansAPI = {
+  apply: (data) => apiClient.post('/loans', data),
+  getUserLoans: () => apiClient.get('/loans'),
+  approve: (id) => apiClient.post(`/loans/${id}/approve`),
+};
+
+/**
+ * Chat API
+ */
+export const chatsAPI = {
+  getConversations: () => apiClient.get('/chats'),
+  getMessages: (conversationId) => apiClient.get(`/chats/${conversationId}/messages`),
+  sendMessage: (conversationId, data) => apiClient.post(`/chats/${conversationId}/messages`, data),
+};
+
+/**
+ * Escrow API
+ */
+export const escrowAPI = {
+  create: (data) => apiClient.post('/escrow', data),
+  release: (id) => apiClient.post(`/escrow/${id}/release`),
+  dispute: (id, data) => apiClient.post(`/escrow/${id}/dispute`, data),
+};
+
+/**
+ * Rewards API
+ */
+export const rewardsAPI = {
+  getMine: () => apiClient.get('/rewards/me'),
+};
+
 export default apiClient;

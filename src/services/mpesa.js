@@ -1,12 +1,6 @@
 // M-Pesa payment integration service
-// Includes mock implementation and real API integration guide
-
-const MPESA_API_URL = process.env.REACT_APP_MPESA_API_URL || 'https://sandbox.safaricom.co.ke/mpesa';
-const MPESA_CONSUMER_KEY = process.env.REACT_APP_MPESA_CONSUMER_KEY || '';
-const MPESA_CONSUMER_SECRET = process.env.REACT_APP_MPESA_CONSUMER_SECRET || '';
-const MPESA_SHORT_CODE = process.env.REACT_APP_MPESA_SHORT_CODE || '174379';
-const MPESA_PASS_KEY = process.env.REACT_APP_MPESA_PASS_KEY || '';
-const MPESA_CALLBACK_URL = process.env.REACT_APP_MPESA_CALLBACK_URL || 'https://your-app.com/mpesa-callback';
+// This module forwards requests to the backend MPESA endpoints.
+import apiClient from './api';
 
 /**
  * M-Pesa STK Push - Initiate payment prompt on user's phone
@@ -14,72 +8,12 @@ const MPESA_CALLBACK_URL = process.env.REACT_APP_MPESA_CALLBACK_URL || 'https://
  * @returns {Promise} Payment initiation response
  */
 export const initiateSTKPush = async (data) => {
-  const {
-    amount,
-    phoneNumber,
-    accountReference,
-    transactionDesc,
-    externalId,
-  } = data;
-
-  // Format phone number for M-Pesa (254712345678 format)
-  const formattedPhone = phoneNumber.replace(/^0/, '254');
-
   try {
-    // For production, use real M-Pesa API
-    // const accessToken = await getAccessToken();
-    
-    // Mock implementation for development
-    console.log('[M-Pesa] Initiating STK Push:', {
-      amount,
-      phoneNumber: formattedPhone,
-      accountReference,
-      transactionDesc,
-    });
-
-    // Simulate API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          ResponseCode: '0',
-          ResponseDescription: 'Success. Request accepted for processing',
-          MerchantRequestID: `MR_${Date.now()}`,
-          CheckoutRequestID: `WEB_${Date.now()}`,
-          CustomerMessage: 'Success. Request accepted for processing',
-        });
-      }, 1000);
-    });
-
-    // Real M-Pesa API call (uncomment for production):
-    // const timestamp = new Date().toISOString().replace(/[:\-.]/g, '');
-    // const password = Buffer.from(
-    //   `${MPESA_SHORT_CODE}${MPESA_PASS_KEY}${timestamp}`
-    // ).toString('base64');
-
-    // const response = await fetch(`${MPESA_API_URL}/stkpush/v1/processrequest`, {
-    //   method: 'POST',
-    //   headers: {
-    //     Authorization: `Bearer ${accessToken}`,
-    //     'Content-Type': 'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     BusinessShortCode: MPESA_SHORT_CODE,
-    //     Password: password,
-    //     Timestamp: timestamp,
-    //     TransactionType: 'CustomerPayBillOnline',
-    //     Amount: Math.ceil(amount),
-    //     PartyA: formattedPhone,
-    //     PartyB: MPESA_SHORT_CODE,
-    //     PhoneNumber: formattedPhone,
-    //     CallBackURL: MPESA_CALLBACK_URL,
-    //     AccountReference: accountReference,
-    //     TransactionDesc: transactionDesc,
-    //   }),
-    // });
-    // return response.json();
-  } catch (error) {
-    console.error('[M-Pesa] STK Push error:', error);
-    throw error;
+    const resp = await apiClient.post('/mpesa/stkpush', data);
+    return resp.data;
+  } catch (err) {
+    console.error('[M-Pesa] STK Push error:', err);
+    throw err;
   }
 };
 
@@ -88,30 +22,8 @@ export const initiateSTKPush = async (data) => {
  * @returns {Promise<string>} Access token
  */
 export const getAccessToken = async () => {
-  try {
-    // Mock token for development
-    return `mock_token_${Date.now()}`;
-
-    // Real M-Pesa API call (uncomment for production):
-    // const auth = Buffer.from(
-    //   `${MPESA_CONSUMER_KEY}:${MPESA_CONSUMER_SECRET}`
-    // ).toString('base64');
-
-    // const response = await fetch(
-    //   `${MPESA_API_URL}/oauth/v1/generate?grant_type=client_credentials`,
-    //   {
-    //     headers: {
-    //       Authorization: `Basic ${auth}`,
-    //     },
-    //   }
-    // );
-
-    // const data = await response.json();
-    // return data.access_token;
-  } catch (error) {
-    console.error('[M-Pesa] Token error:', error);
-    throw error;
-  }
+  // Access token is handled server-side; frontend should not request it directly.
+  throw new Error('Access token must be requested from backend');
 };
 
 /**
@@ -164,49 +76,11 @@ export const processMpesaCallback = (callbackData) => {
  */
 export const checkTransactionStatus = async (checkoutRequestId) => {
   try {
-    // Mock implementation
-    console.log('[M-Pesa] Checking status for:', checkoutRequestId);
-    
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve({
-          ResponseCode: '0',
-          ResponseDescription: 'Success',
-          MerchantRequestID: checkoutRequestId,
-          CheckoutRequestID: checkoutRequestId,
-          ResultCode: '0',
-          ResultDesc: 'The service request has been accepted successfully',
-        });
-      }, 1000);
-    });
-
-    // Real M-Pesa API call (uncomment for production):
-    // const accessToken = await getAccessToken();
-    // const timestamp = new Date().toISOString().replace(/[:\-.]/g, '');
-    // const password = Buffer.from(
-    //   `${MPESA_SHORT_CODE}${MPESA_PASS_KEY}${timestamp}`
-    // ).toString('base64');
-
-    // const response = await fetch(
-    //   `${MPESA_API_URL}/stkpushquery/v1/query`,
-    //   {
-    //     method: 'POST',
-    //     headers: {
-    //       Authorization: `Bearer ${accessToken}`,
-    //       'Content-Type': 'application/json',
-    //     },
-    //     body: JSON.stringify({
-    //       BusinessShortCode: MPESA_SHORT_CODE,
-    //       Password: password,
-    //       Timestamp: timestamp,
-    //       CheckoutRequestID: checkoutRequestId,
-    //     }),
-    //   }
-    // );
-    // return response.json();
-  } catch (error) {
-    console.error('[M-Pesa] Status check error:', error);
-    throw error;
+    const resp = await apiClient.post('/mpesa/status', { checkoutRequestId });
+    return resp.data;
+  } catch (err) {
+    console.error('[M-Pesa] Status check error:', err);
+    throw err;
   }
 };
 
@@ -260,35 +134,11 @@ export const isValidMpesaPhone = (phoneNumber) => {
  * @param {Object} data - Payment data
  * @returns {Promise} Mock payment result
  */
-export const mockPayment = async (data) => {
-  return new Promise((resolve, reject) => {
-    // Simulate random success/failure for testing
-    setTimeout(() => {
-      const isSuccess = Math.random() > 0.3; // 70% success rate
-      
-      if (isSuccess) {
-        resolve({
-          success: true,
-          transactionId: `MOCK_${generateTransactionRef()}`,
-          amount: data.amount,
-          phoneNumber: data.phoneNumber,
-          timestamp: new Date().toISOString(),
-          message: 'Mock payment successful',
-        });
-      } else {
-        reject(new Error('Mock payment failed - User cancelled the transaction'));
-      }
-    }, 2000);
-  });
-};
-
 export default {
   initiateSTKPush,
-  getAccessToken,
   processMpesaCallback,
   checkTransactionStatus,
   generateTransactionRef,
   formatPhoneNumber,
   isValidMpesaPhone,
-  mockPayment,
 };
