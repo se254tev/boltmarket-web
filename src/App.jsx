@@ -22,6 +22,8 @@ import PartnersPage from './pages/PartnersPage';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 import CookiePolicy from './pages/CookiePolicy';
+import ContinueWithEmail from './pages/ContinueWithEmail';
+import AuthCallback from './pages/AuthCallback';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
@@ -67,6 +69,8 @@ function App() {
               <Route path="/features" element={<FeaturesPage />} />
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/security" element={<SecurityPage />} />
+              <Route path="/continue-with-email" element={<ContinueWithEmail />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/blog" element={<BlogPage />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<Terms />} />

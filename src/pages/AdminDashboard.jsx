@@ -73,9 +73,7 @@ export const AdminDashboard = () => {
       {activeTab === 'disputes' && (
         <DisputeResolutionPanel disputes={disputes} onDisputesChange={setDisputes} />
       )}
-      {activeTab === 'analytics' && (
-        <AnalyticsPanel stats={stats} />
-      )}
+      {activeTab === 'analytics' && <AnalyticsPanel stats={stats} />}
     </div>
   );
 };
@@ -91,16 +89,8 @@ const DashboardOverview = ({ stats, reports, disputes }) => {
     <div className="space-y-6">
       {/* KPIs */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <StatCard
-          icon={Package}
-          label="Total Listings"
-          value={stats?.total_listings || 0}
-        />
-        <StatCard
-          icon={Users}
-          label="Active Users"
-          value={stats?.active_users || 0}
-        />
+        <StatCard icon={Package} label="Total Listings" value={stats?.total_listings || 0} />
+        <StatCard icon={Users} label="Active Users" value={stats?.active_users || 0} />
         <StatCard
           icon={AlertCircle}
           label="Pending Reports"
@@ -130,18 +120,21 @@ const DashboardOverview = ({ stats, reports, disputes }) => {
                 className="flex items-center justify-between p-3 bg-dark-50 dark:bg-dark-700 rounded"
               >
                 <div>
-                  <p className="text-sm font-medium text-dark-900 dark:text-white">
+                  <p className="text-sm font-medium text-dark-900 dark:text-white truncate">
                     {report.reason}
                   </p>
                   <p className="text-xs text-dark-500 dark:text-dark-400">
-                    Reported {new Date(report.created_at).toLocaleDateString()}
+                    Reporter ID: {report.reporter_id?.slice(0, 8)} | Phone:{' '}
+                    {report.reporter_phone || 'N/A'}
                   </p>
                 </div>
-                <span className={`text-xs font-medium px-2 py-1 rounded ${
-                  report.status === 'pending'
-                    ? 'bg-yellow-100 text-yellow-700'
-                    : 'bg-green-100 text-green-700'
-                }`}>
+                <span
+                  className={`text-xs font-medium px-2 py-1 rounded ${
+                    report.status === 'pending'
+                      ? 'bg-yellow-100 text-yellow-700'
+                      : 'bg-green-100 text-green-700'
+                  }`}
+                >
                   {report.status}
                 </span>
               </div>
@@ -158,16 +151,16 @@ const DashboardOverview = ({ stats, reports, disputes }) => {
  */
 const StatCard = ({ icon: Icon, label, value, highlight }) => {
   return (
-    <div className={`card card-base dark:bg-dark-800 dark:border-dark-700 ${
-      highlight ? 'border-red-200 dark:border-red-800' : ''
-    }`}>
-      <Icon className={`w-8 h-8 mb-2 ${
-        highlight ? 'text-red-500' : 'text-primary-500'
-      }`} />
+    <div
+      className={`card card-base dark:bg-dark-800 dark:border-dark-700 ${
+        highlight ? 'border-red-200 dark:border-red-800' : ''
+      }`}
+    >
+      <Icon
+        className={`w-8 h-8 mb-2 ${highlight ? 'text-red-500' : 'text-primary-500'}`}
+      />
       <p className="text-xs text-dark-500 dark:text-dark-400 mb-1">{label}</p>
-      <p className="text-2xl font-bold text-dark-900 dark:text-white">
-        {value.toLocaleString()}
-      </p>
+      <p className="text-2xl font-bold text-dark-900 dark:text-white">{value.toLocaleString()}</p>
     </div>
   );
 };
@@ -182,13 +175,13 @@ const ModerationPanel = ({ reports, onReportsChange }) => {
   const handleModerate = async (reportId, action, reason) => {
     setIsProcessing(true);
     try {
-      const { data } = await moderationAPI.updateReport(reportId, { status: 'resolved', action, reason });
-      
-      // Update report list
-      onReportsChange((prev) =>
-        prev.map((r) => (r.id === reportId ? data : r))
-      );
-      
+      const { data } = await moderationAPI.updateReport(reportId, {
+        status: 'resolved',
+        action,
+        reason,
+      });
+
+      onReportsChange((prev) => prev.map((r) => (r.id === reportId ? data : r)));
       setSelectedReport(null);
       alert('Report processed successfully');
     } catch (error) {
@@ -202,7 +195,6 @@ const ModerationPanel = ({ reports, onReportsChange }) => {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      {/* Report List */}
       <div className="lg:col-span-1">
         <div className="card card-base dark:bg-dark-800 dark:border-dark-700">
           <h3 className="font-bold text-dark-900 dark:text-white mb-4">
@@ -223,7 +215,7 @@ const ModerationPanel = ({ reports, onReportsChange }) => {
                   {report.reason}
                 </p>
                 <p className="text-xs text-dark-500 dark:text-dark-400">
-                  by {report.reporter_id?.slice(0, 8)}
+                  Reporter: {report.reporter_id?.slice(0, 8)} | Phone: {report.reporter_phone || 'N/A'}
                 </p>
               </button>
             ))}
@@ -231,7 +223,6 @@ const ModerationPanel = ({ reports, onReportsChange }) => {
         </div>
       </div>
 
-      {/* Report Details */}
       {selectedReport ? (
         <div className="lg:col-span-2">
           <ReportDetailView
@@ -242,9 +233,7 @@ const ModerationPanel = ({ reports, onReportsChange }) => {
         </div>
       ) : (
         <div className="lg:col-span-2 card card-base dark:bg-dark-800 dark:border-dark-700 flex items-center justify-center h-96">
-          <p className="text-dark-500 dark:text-dark-400">
-            Select a report to review
-          </p>
+          <p className="text-dark-500 dark:text-dark-400">Select a report to review</p>
         </div>
       )}
     </div>
@@ -259,30 +248,24 @@ const ReportDetailView = ({ report, onModerate, isProcessing }) => {
 
   return (
     <div className="card card-base dark:bg-dark-800 dark:border-dark-700">
-      <h3 className="text-lg font-bold text-dark-900 dark:text-white mb-4">
-        Report Details
-      </h3>
+      <h3 className="text-lg font-bold text-dark-900 dark:text-white mb-4">Report Details</h3>
 
       <div className="space-y-4 mb-6">
         <DetailItem label="Reason" value={report.reason} />
-        <DetailItem label="Reporter" value={report.reporter_id?.slice(0, 8)} />
+        <DetailItem label="Reporter ID" value={report.reporter_id} />
+        <DetailItem label="Reporter Phone" value={report.reporter_phone || 'N/A'} />
         <DetailItem label="Content Type" value={report.content_type || 'N/A'} />
         <DetailItem label="Date" value={new Date(report.created_at).toLocaleDateString()} />
         <div>
-          <p className="text-sm font-medium text-dark-900 dark:text-white mb-2">
-            Description
-          </p>
+          <p className="text-sm font-medium text-dark-900 dark:text-white mb-2">Description</p>
           <p className="text-sm text-dark-600 dark:text-dark-300 bg-dark-50 dark:bg-dark-700 p-3 rounded">
             {report.description}
           </p>
         </div>
       </div>
 
-      {/* Moderation Actions */}
       <div className="border-t border-dark-200 dark:border-dark-700 pt-4">
-        <p className="text-sm font-medium text-dark-900 dark:text-white mb-3">
-          Moderation Action
-        </p>
+        <p className="text-sm font-medium text-dark-900 dark:text-white mb-3">Moderation Action</p>
         <textarea
           value={moderationReason}
           onChange={(e) => setModerationReason(e.target.value)}
@@ -314,188 +297,11 @@ const ReportDetailView = ({ report, onModerate, isProcessing }) => {
 /**
  * Detail Item Component
  */
-const DetailItem = ({ label, value }) => {
-  return (
-    <div>
-      <p className="text-xs text-dark-500 dark:text-dark-400 mb-1">{label}</p>
-      <p className="text-sm text-dark-900 dark:text-white font-medium">{value}</p>
-    </div>
-  );
-};
-
-/**
- * Dispute Resolution Panel
- */
-const DisputeResolutionPanel = ({ disputes, onDisputesChange }) => {
-  const [selectedDispute, setSelectedDispute] = useState(null);
-  const [isProcessing, setIsProcessing] = useState(false);
-  const [resolution, setResolution] = useState('');
-
-  const handleResolveDispute = async (disputeId, resolutionText) => {
-    setIsProcessing(true);
-    try {
-      const { data } = await disputesAPI.resolveDispute(disputeId, { status: 'resolved', resolution: resolutionText });
-      
-      onDisputesChange((prev) =>
-        prev.map((d) => (d.id === disputeId ? data : d))
-      );
-      
-      setSelectedDispute(null);
-      setResolution('');
-      alert('Dispute resolved successfully');
-    } catch (error) {
-      alert('Error resolving dispute');
-    } finally {
-      setIsProcessing(false);
-    }
-  };
-
-  const openDisputes = disputes.filter((d) => d.status === 'open');
-
-  return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-1">
-        <div className="card card-base dark:bg-dark-800 dark:border-dark-700">
-          <h3 className="font-bold text-dark-900 dark:text-white mb-4">
-            Disputes ({openDisputes.length} open)
-          </h3>
-          <div className="space-y-2">
-            {openDisputes.map((dispute) => (
-              <button
-                key={dispute.id}
-                onClick={() => setSelectedDispute(dispute)}
-                className={`w-full text-left p-3 rounded border transition-colors ${
-                  selectedDispute?.id === dispute.id
-                    ? 'bg-primary-100 dark:bg-primary-900 border-primary-500'
-                    : 'border-dark-200 dark:border-dark-700'
-                }`}
-              >
-                <p className="text-sm font-medium text-dark-900 dark:text-white">
-                  Escrow {dispute.escrow_id?.slice(0, 8)}
-                </p>
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {selectedDispute && (
-        <div className="lg:col-span-2">
-          <div className="card card-base dark:bg-dark-800 dark:border-dark-700">
-            <h3 className="text-lg font-bold text-dark-900 dark:text-white mb-4">
-              Dispute Resolution
-            </h3>
-
-            <div className="space-y-4 mb-6">
-              <DetailItem
-                label="Initiator"
-                value={selectedDispute.initiator_id?.slice(0, 8)}
-              />
-              <DetailItem
-                label="Defendant"
-                value={selectedDispute.defendant_id?.slice(0, 8)}
-              />
-              <DetailItem
-                label="Reason"
-                value={selectedDispute.reason}
-              />
-            </div>
-
-            <textarea
-              value={resolution}
-              onChange={(e) => setResolution(e.target.value)}
-              placeholder="Provide resolution..."
-              rows={4}
-              className="input dark:bg-dark-800 dark:text-white dark:border-dark-600 mb-4"
-            />
-
-            <button
-              onClick={() =>
-                handleResolveDispute(selectedDispute.id, resolution)
-              }
-              disabled={isProcessing || !resolution}
-              className="btn btn-primary w-full disabled:opacity-50"
-            >
-              {isProcessing ? 'Resolving...' : 'Resolve Dispute'}
-            </button>
-          </div>
-        </div>
-      )}
-    </div>
-  );
-};
-
-/**
- * Analytics Panel
- */
-const AnalyticsPanel = ({ stats }) => {
-  const latestStats = stats?.[0] || {};
-
-  return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      {/* Key Metrics */}
-      <div className="card card-base dark:bg-dark-800 dark:border-dark-700">
-        <h3 className="text-lg font-bold text-dark-900 dark:text-white mb-4">
-          Platform Metrics
-        </h3>
-        <div className="space-y-3">
-          <AnalyticsRow
-            label="Total Users"
-            value={latestStats.total_users || 0}
-          />
-          <AnalyticsRow
-            label="Total Transactions"
-            value={latestStats.total_transactions || 0}
-          />
-          <AnalyticsRow
-            label="Total Volume"
-            value={`KES ${(latestStats.total_volume || 0).toLocaleString()}`}
-          />
-          <AnalyticsRow
-            label="Active Listings"
-            value={latestStats.active_listings || 0}
-          />
-        </div>
-      </div>
-
-      {/* Growth Metrics */}
-      <div className="card card-base dark:bg-dark-800 dark:border-dark-700">
-        <h3 className="text-lg font-bold text-dark-900 dark:text-white mb-4">
-          Growth Indicators
-        </h3>
-        <div className="space-y-3">
-          <AnalyticsRow
-            label="New Users (30d)"
-            value={latestStats.new_users_30d || 0}
-          />
-          <AnalyticsRow
-            label="Avg Rating"
-            value={(latestStats.avg_rating || 0).toFixed(2)}
-          />
-          <AnalyticsRow
-            label="Dispute Rate"
-            value={`${(latestStats.dispute_rate || 0).toFixed(2)}%`}
-          />
-          <AnalyticsRow
-            label="Completion Rate"
-            value={`${(latestStats.completion_rate || 0).toFixed(2)}%`}
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-/**
- * Analytics Row Component
- */
-const AnalyticsRow = ({ label, value }) => {
-  return (
-    <div className="flex justify-between items-center p-2 hover:bg-dark-50 dark:hover:bg-dark-700 rounded transition-colors">
-      <span className="text-sm text-dark-600 dark:text-dark-300">{label}</span>
-      <span className="font-bold text-dark-900 dark:text-white">{value}</span>
-    </div>
-  );
-};
+const DetailItem = ({ label, value }) => (
+  <div>
+    <p className="text-xs text-dark-500 dark:text-dark-400 mb-1">{label}</p>
+    <p className="text-sm text-dark-900 dark:text-white font-medium">{value}</p>
+  </div>
+);
 
 export default AdminDashboard;

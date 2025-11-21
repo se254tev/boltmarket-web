@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
-import { Check, X, Star } from 'lucide-react';
+import { Check, X, Star, MessageCircle } from 'lucide-react';
 import pricingConfig from '../config/pricingConfig';
 import PricingCard from '../components/PricingCard';
 
-/**
- * Pricing Page
- * Shows pricing tiers, features comparison, and testimonials
- */
 function PricingPage() {
   const [billingCycle, setBillingCycle] = useState('monthly');
 
@@ -15,19 +11,22 @@ function PricingPage() {
       key: 'starter',
       ...pricingConfig.plans.starter,
       highlighted: false,
-      cta: 'Get Started'
+      cta: 'Get Started',
+      contactNumber: '254797819571',
     },
     {
       key: 'professional',
       ...pricingConfig.plans.professional,
       highlighted: true,
-      cta: 'Start Trial'
+      cta: 'Start Trial',
+      contactNumber: '254797819571',
     },
     {
       key: 'enterprise',
       ...pricingConfig.plans.enterprise,
       highlighted: false,
-      cta: 'Contact Sales'
+      cta: 'Contact Sales',
+      contactNumber: '254797819571',
     }
   ];
 
@@ -92,6 +91,7 @@ function PricingPage() {
 
   return (
     <div className="min-h-screen bg-white">
+
       {/* Hero Section */}
       <div className="bg-gradient-to-b from-primary-50 to-white pt-20 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-4xl mx-auto text-center">
@@ -133,22 +133,25 @@ function PricingPage() {
 
       {/* Pricing Cards */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-            {plans.map((plan) => {
-              const priceAmount = plan.price[billingCycle];
-              const priceLabel = pricingConfig.format(priceAmount);
-              return (
-                <PricingCard
-                  key={plan.key}
-                  plan={plan}
-                  priceLabel={`${priceLabel}${billingCycle === 'daily' ? ' /day' : billingCycle === 'monthly' ? ' /month' : ' /year'}`}
-                  highlighted={plan.highlighted}
-                  onAction={() => alert(`Selected ${plan.name} - ${pricingConfig.format(priceAmount)}`)}
-                  ctaText={plan.cta}
-                />
-              );
-            })}
-          </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+          {plans.map((plan) => {
+            const priceAmount = plan.price[billingCycle];
+            const priceLabel = pricingConfig.format(priceAmount);
+            const contactLink = `https://wa.me/${plan.contactNumber}?text=Hi,%20I'm%20interested%20in%20the%20${plan.name}%20plan`;
+
+            return (
+              <PricingCard
+                key={plan.key}
+                plan={plan}
+                priceLabel={`${priceLabel}${billingCycle === 'monthly' ? ' /month' : ' /year'}`}
+                highlighted={plan.highlighted}
+                onAction={() => window.open(contactLink, '_blank')}
+                ctaText={plan.cta}
+                extraInfo={`Contact: +${plan.contactNumber}`}
+              />
+            );
+          })}
+        </div>
       </div>
 
       {/* Comparison Table */}
@@ -239,7 +242,9 @@ function PricingPage() {
           <p className="text-primary-100 mb-8 text-lg">
             All plans include 14-day free trial. No credit card required.
           </p>
-          <button className="bg-white text-primary-600 font-semibold px-8 py-3 rounded-lg hover:bg-slate-50 transition-colors">
+          <button className="bg-white text-primary-600 font-semibold px-8 py-3 rounded-lg hover:bg-slate-50 transition-colors"
+            onClick={() => window.open(`https://wa.me/254797819571?text=Hi,%20I%20want%20to%20get%20started`, '_blank')}
+          >
             Get Started Free
           </button>
         </div>

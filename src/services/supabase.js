@@ -2,8 +2,9 @@
 // Replace SUPABASE_URL and SUPABASE_KEY with your actual credentials
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL || 'https://ubbsxosmjgditxlleqal.supabase.co';
-const SUPABASE_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViYnN4b3NtamdkaXR4bGxlcWFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2MDI1ODcsImV4cCI6MjA3ODE3ODU4N30.sc_5wBgs7NblwVeJms3S-e9kIe5jpfa9vI2lBCo0OkA';
+// Prefer Vite environment variables (VITE_) but fall back to REACT_APP_ for backwards compatibility
+const SUPABASE_URL = process.env.VITE_SUPABASE_URL || process.env.REACT_APP_SUPABASE_URL || 'https://ubbsxosmjgditxlleqal.supabase.co';
+const SUPABASE_KEY = process.env.VITE_SUPABASE_ANON_KEY || process.env.REACT_APP_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InViYnN4b3NtamdkaXR4bGxlcWFsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjI2MDI1ODcsImV4cCI6MjA3ODE3ODU4N30.sc_5wBgs7NblwVeJms3S-e9kIe5jpfa9vI2lBCo0OkA';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
@@ -412,17 +413,20 @@ export const favoritesAPI = {
 export const sellersAPI = {
   // Get seller profile
   getSellerProfile: (sellerId) =>
+    // profiles table holds seller profile records keyed by auth user id
     supabase
-      .from('users')
+      .from('profiles')
       .select('*')
       .eq('id', sellerId)
       .single(),
 
   // Get current user profile
   getCurrentProfile: () =>
-    supabase
-      .from('users')
-      .select('*'),
+    // Attempt to resolve current authenticated user, then return profile
+    supabase.auth.getUser().then(({ data, error }) => {
+      if (error || !data?.user) return { data: null, error };
+      return supabase.from('profiles').select('*').eq('id', data.user.id).single();
+    }),
 
   // Get my listings
   getMyListings: () =>
@@ -514,12 +518,33 @@ export const cartAPI = {
  * Orders API
  */
 export const ordersAPI = {
-  // Create order
-  createOrder: (data) =>
-    supabase
-      .from('orders')
-      .insert([{ ...data, created_at: new Date(), paymentReleased: false }])
-      .select(),
+  // Create order. If `data.items` (array) is provided, insert order then create order_items.
+  createOrder: async (data) => {
+    // data: { buyer_id, seller_id, total_amount, currency, payment_method, items: [{ listing_id, quantity, unit_price }], meta }
+    const insertData = { ...data };
+    delete insertData.items;
+    insertData.created_at = new Date();
+    insertData.payment_released = false;
+
+    const { data: orderResp, error: orderErr } = await supabase.from('orders').insert([insertData]).select().single();
+    if (orderErr) return { error: orderErr };
+
+    const order = orderResp;
+    if (data.items && Array.isArray(data.items) && data.items.length > 0) {
+      const itemsToInsert = data.items.map((it) => ({
+        order_id: order.id,
+        listing_id: it.listing_id,
+        quantity: it.quantity || 1,
+        unit_price: it.unit_price || null,
+        created_at: new Date(),
+      }));
+      const { data: itemsResp, error: itemsErr } = await supabase.from('order_items').insert(itemsToInsert).select();
+      if (itemsErr) return { error: itemsErr };
+      return { data: { order, items: itemsResp } };
+    }
+
+    return { data: { order } };
+  },
 
   // Get order
   getOrder: (id) =>
@@ -542,6 +567,66 @@ export const ordersAPI = {
     supabase
       .from('orders')
       .update({ ...data, updated_at: new Date() })
+      .eq('id', id)
+      .select(),
+};
+
+/**
+ * Reports API (content reports / moderation)
+ */
+export const reportsAPI = {
+  createReport: (data) =>
+    supabase
+      .from('content_reports')
+      .insert([{ ...data, status: 'pending', created_at: new Date() }])
+      .select(),
+
+  getReports: () =>
+    supabase
+      .from('content_reports')
+      .select('*')
+      .order('created_at', { ascending: false }),
+
+  updateReport: (id, data) =>
+    supabase
+      .from('content_reports')
+      .update({ ...data, updated_at: new Date() })
+      .eq('id', id)
+      .select(),
+};
+
+/**
+ * Payments helpers
+ */
+export const paymentsAPI = {
+  // Create payment record
+  createPayment: (data) =>
+    supabase
+      .from('payments')
+      .insert([{ ...data, created_at: new Date() }])
+      .select(),
+
+  // Get payment by ID
+  getPayment: (id) =>
+    supabase
+      .from('payments')
+      .select('*')
+      .eq('id', id)
+      .single(),
+
+  // Get user payments
+  getUserPayments: (userId) =>
+    supabase
+      .from('payments')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false }),
+
+  // Update payment status/confirmation
+  updatePaymentStatus: (id, status, confirmation = null) =>
+    supabase
+      .from('payments')
+      .update({ status, confirmation, updated_at: new Date() })
       .eq('id', id)
       .select(),
 };
