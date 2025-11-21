@@ -110,6 +110,27 @@ function SellerDashboard() {
     }
   };
 
+  // Copy helper for payment details
+  const handleCopy = async (text) => {
+    if (!text) {
+      alert('Nothing to copy');
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      alert('Copied to clipboard');
+    } catch (err) {
+      console.error('Copy failed', err);
+      alert('Copy failed');
+    }
+  };
+
+  // Simulated bank verification flow
+  const handleVerifyBank = () => {
+    // In a real app this would start a verification workflow via the API
+    alert('Bank account verification simulated — status: Verified');
+  };
+
   const stats = [
     { label: 'Active Listings', value: listings.filter(l => l.status === 'active').length, icon: '📦' },
     { label: 'Total Views', value: listings.reduce((sum, l) => sum + (l.views || 0), 0), icon: '👁' },
@@ -147,6 +168,49 @@ function SellerDashboard() {
                 <p className="text-3xl font-bold text-primary-600">{stat.value}</p>
               </div>
             ))}
+          </div>
+        </div>
+
+        {/* Payment Options */}
+        <div className="mb-8">
+          <h2 className="text-lg font-semibold mb-3">Payment Options</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="card card-base">
+              <p className="text-sm text-dark-600 mb-2">Bank Account</p>
+              <p className="font-medium mb-3">{
+                seller?.bankAccount
+                  ? `${seller.bankAccount.bankName} • ${seller.bankAccount.accountNumber}`
+                  : 'No bank connected'
+              }</p>
+              <div className="flex gap-2">
+                <button onClick={handleVerifyBank} className="btn btn-secondary btn-sm">Verify</button>
+                <button onClick={() => handleCopy(seller?.bankAccount?.accountNumber || '')} className="btn btn-outline btn-sm">Copy</button>
+              </div>
+            </div>
+
+            <div className="card card-base">
+              <p className="text-sm text-dark-600 mb-2">Till Number</p>
+              <p className="font-medium mb-3">123456</p>
+              <div className="flex gap-2">
+                <button onClick={() => handleCopy('123456')} className="btn btn-outline btn-sm">Copy</button>
+              </div>
+            </div>
+
+            <div className="card card-base">
+              <p className="text-sm text-dark-600 mb-2">Pochi la Biashara</p>
+              <p className="font-medium mb-3">07xx xxx xxx</p>
+              <div className="flex gap-2">
+                <button onClick={() => handleCopy('07xxxxxxxx')} className="btn btn-outline btn-sm">Copy</button>
+              </div>
+            </div>
+
+            <div className="card card-base">
+              <p className="text-sm text-dark-600 mb-2">M-PESA Send Money</p>
+              <p className="font-medium mb-3">07xx xxx xxx</p>
+              <div className="flex gap-2">
+                <button onClick={() => handleCopy('07xxxxxxxx')} className="btn btn-outline btn-sm">Copy</button>
+              </div>
+            </div>
           </div>
         </div>
 

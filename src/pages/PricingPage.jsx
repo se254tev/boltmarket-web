@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Check, X, Star } from 'lucide-react';
+import pricingConfig from '../config/pricingConfig';
+import PricingCard from '../components/PricingCard';
 
 /**
  * Pricing Page
@@ -10,54 +12,21 @@ function PricingPage() {
 
   const plans = [
     {
-      name: 'Starter',
-      price: billingCycle === 'monthly' ? 0 : 0,
-      period: billingCycle === 'monthly' ? '/month' : '/year',
-      description: 'Perfect for getting started',
+      key: 'starter',
+      ...pricingConfig.plans.starter,
       highlighted: false,
-      features: [
-        { text: 'Up to 5 active listings', included: true },
-        { text: 'Basic seller analytics', included: true },
-        { text: 'In-app messaging', included: true },
-        { text: 'Community support', included: true },
-        { text: 'Advanced tools', included: false },
-        { text: 'Priority support', included: false },
-        { text: 'Bulk operations', included: false }
-      ],
       cta: 'Get Started'
     },
     {
-      name: 'Professional',
-      price: billingCycle === 'monthly' ? 9.99 : 99.99,
-      period: billingCycle === 'monthly' ? '/month' : '/year',
-      description: 'For serious sellers',
+      key: 'professional',
+      ...pricingConfig.plans.professional,
       highlighted: true,
-      features: [
-        { text: 'Unlimited listings', included: true },
-        { text: 'Advanced analytics', included: true },
-        { text: 'Priority messaging', included: true },
-        { text: 'Email support', included: true },
-        { text: 'Promotion tools', included: true },
-        { text: 'API access', included: false },
-        { text: 'Custom branding', included: false }
-      ],
-      cta: 'Start Free Trial'
+      cta: 'Start Trial'
     },
     {
-      name: 'Enterprise',
-      price: 'Custom',
-      period: '',
-      description: 'For high-volume sellers',
+      key: 'enterprise',
+      ...pricingConfig.plans.enterprise,
       highlighted: false,
-      features: [
-        { text: 'Everything in Professional', included: true },
-        { text: 'Dedicated account manager', included: true },
-        { text: '24/7 phone support', included: true },
-        { text: 'Custom analytics', included: true },
-        { text: 'Bulk listing tools', included: true },
-        { text: 'Full API access', included: true },
-        { text: 'Custom branding', included: true }
-      ],
       cta: 'Contact Sales'
     }
   ];
@@ -164,69 +133,22 @@ function PricingPage() {
 
       {/* Pricing Cards */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
-          {plans.map((plan, idx) => (
-            <div
-              key={idx}
-              className={`rounded-xl p-8 transition-all ${
-                plan.highlighted
-                  ? 'bg-gradient-to-br from-primary-50 to-blue-50 border-2 border-primary-500 shadow-xl relative'
-                  : 'bg-white border border-slate-200 shadow-sm'
-              }`}
-            >
-              {plan.highlighted && (
-                <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 bg-primary-600 text-white px-4 py-1 rounded-full text-sm font-semibold">
-                  Most Popular
-                </div>
-              )}
-
-              <h3 className="text-2xl font-bold text-dark-900 mb-2 font-display">
-                {plan.name}
-              </h3>
-              <p className="text-dark-600 mb-6">{plan.description}</p>
-
-              <div className="mb-8">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-bold text-dark-900">
-                    {typeof plan.price === 'string' ? plan.price : `$${plan.price.toFixed(2)}`}
-                  </span>
-                  <span className="text-dark-600">{plan.period}</span>
-                </div>
-              </div>
-
-              <button
-                className={`w-full py-3 px-6 rounded-lg font-semibold mb-8 transition-all ${
-                  plan.highlighted
-                    ? 'bg-primary-600 text-white hover:bg-primary-700'
-                    : 'bg-slate-100 text-dark-900 hover:bg-slate-200'
-                }`}
-              >
-                {plan.cta}
-              </button>
-
-              <div className="space-y-4">
-                {plan.features.map((feature, fidx) => (
-                  <div key={fidx} className="flex items-start gap-3">
-                    {feature.included ? (
-                      <Check size={20} className="text-emerald-500 flex-shrink-0 mt-0.5" />
-                    ) : (
-                      <X size={20} className="text-slate-300 flex-shrink-0 mt-0.5" />
-                    )}
-                    <span
-                      className={
-                        feature.included
-                          ? 'text-dark-700'
-                          : 'text-dark-400 line-through'
-                      }
-                    >
-                      {feature.text}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
-        </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
+            {plans.map((plan) => {
+              const priceAmount = plan.price[billingCycle];
+              const priceLabel = pricingConfig.format(priceAmount);
+              return (
+                <PricingCard
+                  key={plan.key}
+                  plan={plan}
+                  priceLabel={`${priceLabel}${billingCycle === 'daily' ? ' /day' : billingCycle === 'monthly' ? ' /month' : ' /year'}`}
+                  highlighted={plan.highlighted}
+                  onAction={() => alert(`Selected ${plan.name} - ${pricingConfig.format(priceAmount)}`)}
+                  ctaText={plan.cta}
+                />
+              );
+            })}
+          </div>
       </div>
 
       {/* Comparison Table */}
