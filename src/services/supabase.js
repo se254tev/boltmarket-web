@@ -433,6 +433,186 @@ export const sellersAPI = {
 };
 
 /**
+ * Payment Methods API
+ */
+export const paymentMethodsAPI = {
+  // Get payment methods for a user
+  getPaymentMethods: (userId) =>
+    supabase
+      .from('payment_methods')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false }),
+
+  // Add a payment method
+  addPaymentMethod: (data) =>
+    supabase
+      .from('payment_methods')
+      .insert([{ ...data, created_at: new Date(), verified: false }])
+      .select(),
+
+  // Update a payment method
+  updatePaymentMethod: (id, data) =>
+    supabase
+      .from('payment_methods')
+      .update({ ...data, updated_at: new Date() })
+      .eq('id', id)
+      .select(),
+
+  // Delete a payment method
+  deletePaymentMethod: (id) =>
+    supabase
+      .from('payment_methods')
+      .delete()
+      .eq('id', id),
+
+  // Admin verification action
+  verifyPaymentMethod: (id, adminId, verified = true, reason = '') =>
+    supabase
+      .from('payment_methods')
+      .update({ verified, verified_by: adminId, verify_reason: reason, verified_at: new Date() })
+      .eq('id', id)
+      .select(),
+};
+
+/**
+ * Cart API
+ */
+export const cartAPI = {
+  // Get cart items for a user
+  getCart: (userId) =>
+    supabase
+      .from('cart_items')
+      .select('*')
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false }),
+
+  // Add item to cart
+  addToCart: (data) =>
+    supabase
+      .from('cart_items')
+      .insert([{ ...data, created_at: new Date() }])
+      .select(),
+
+  // Update cart item quantity
+  updateCartItem: (id, data) =>
+    supabase
+      .from('cart_items')
+      .update({ ...data, updated_at: new Date() })
+      .eq('id', id)
+      .select(),
+
+  // Remove cart item
+  removeCartItem: (id) =>
+    supabase
+      .from('cart_items')
+      .delete()
+      .eq('id', id),
+};
+
+/**
+ * Orders API
+ */
+export const ordersAPI = {
+  // Create order
+  createOrder: (data) =>
+    supabase
+      .from('orders')
+      .insert([{ ...data, created_at: new Date(), paymentReleased: false }])
+      .select(),
+
+  // Get order
+  getOrder: (id) =>
+    supabase
+      .from('orders')
+      .select('*')
+      .eq('id', id)
+      .single(),
+
+  // Get user orders
+  getUserOrders: (userId) =>
+    supabase
+      .from('orders')
+      .select('*')
+      .or(`buyer_id.eq.${userId},seller_id.eq.${userId}`)
+      .order('created_at', { ascending: false }),
+
+  // Update order and optionally release payment
+  updateOrder: (id, data) =>
+    supabase
+      .from('orders')
+      .update({ ...data, updated_at: new Date() })
+      .eq('id', id)
+      .select(),
+};
+
+/**
+ * Admin API & Logs
+ */
+export const adminAPI = {
+  // Get all orders (admin)
+  getAllOrders: () =>
+    supabase
+      .from('orders')
+      .select('*')
+      .order('created_at', { ascending: false }),
+
+  // Log admin action
+  createAdminLog: (data) =>
+    supabase
+      .from('admin_logs')
+      .insert([{ ...data, created_at: new Date() }])
+      .select(),
+
+  // User management helpers
+  suspendUser: (userId, reason = '') =>
+    supabase
+      .from('profiles')
+      .update({ suspended: true, suspend_reason: reason, updated_at: new Date() })
+      .eq('id', userId)
+      .select(),
+
+  restoreUser: (userId) =>
+    supabase
+      .from('profiles')
+      .update({ suspended: false, updated_at: new Date() })
+      .eq('id', userId)
+      .select(),
+
+  promoteToAdmin: (userId) =>
+    supabase
+      .from('profiles')
+      .update({ role: 'admin', updated_at: new Date() })
+      .eq('id', userId)
+      .select(),
+};
+
+/**
+ * Seller Payouts API
+ */
+export const payoutsAPI = {
+  createPayout: (data) =>
+    supabase
+      .from('seller_payouts')
+      .insert([{ ...data, status: 'pending', created_at: new Date() }])
+      .select(),
+
+  getPayoutsForSeller: (sellerId) =>
+    supabase
+      .from('seller_payouts')
+      .select('*')
+      .eq('seller_id', sellerId)
+      .order('created_at', { ascending: false }),
+
+  releasePayout: (id, releasedBy) =>
+    supabase
+      .from('seller_payouts')
+      .update({ status: 'released', released_by: releasedBy, released_at: new Date() })
+      .eq('id', id)
+      .select(),
+};
+
+/**
  * Reviews API
  */
 export const reviewsAPI = {

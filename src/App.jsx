@@ -10,6 +10,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import LoansPage from './pages/LoansPage';
 import ChatPage from './pages/ChatPage';
 import AdminDashboard from './pages/AdminDashboard';
+import SettingsPage from './pages/SettingsPage';
 import FeaturesPage from './pages/FeaturesPage';
 import PricingPage from './pages/PricingPage';
 import SecurityPage from './pages/SecurityPage';
@@ -59,6 +60,7 @@ function App() {
                 element={<ChatPage userId={currentUserId} userName="You" />}
               />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/settings" element={<SettingsPage />} />
               <Route path="/features" element={<FeaturesPage />} />
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/security" element={<SecurityPage />} />
