@@ -19,6 +19,9 @@ import AboutPage from './pages/AboutPage';
 import CareersPage from './pages/CareersPage';
 import PressPage from './pages/PressPage';
 import PartnersPage from './pages/PartnersPage';
+import PrivacyPolicy from './pages/PrivacyPolicy';
+import Terms from './pages/Terms';
+import CookiePolicy from './pages/CookiePolicy';
 import { ThemeProvider } from './contexts/ThemeContext';
 
 function App() {
@@ -65,6 +68,9 @@ function App() {
               <Route path="/pricing" element={<PricingPage />} />
               <Route path="/security" element={<SecurityPage />} />
               <Route path="/blog" element={<BlogPage />} />
+              <Route path="/privacy" element={<PrivacyPolicy />} />
+              <Route path="/terms" element={<Terms />} />
+              <Route path="/cookies" element={<CookiePolicy />} />
               <Route path="/about" element={<AboutPage />} />
               <Route path="/careers" element={<CareersPage />} />
               <Route path="/press" element={<PressPage />} />

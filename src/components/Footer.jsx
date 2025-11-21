@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
 /**
@@ -95,14 +95,7 @@ function Footer() {
           <div>
             <h4 className="font-semibold text-white mb-4">Stay Updated</h4>
             <p className="text-dark-400 text-sm mb-4">Get the latest deals and news.</p>
-            <div className="flex gap-2">
-              <input 
-                type="email" 
-                placeholder="Your email" 
-                className="flex-1 px-3 py-2 rounded-lg bg-dark-800 text-white placeholder-dark-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500"
-              />
-              <button className="btn btn-primary btn-sm">Subscribe</button>
-            </div>
+            <NewsletterSubscribe />
           </div>
         </div>
 
@@ -113,9 +106,9 @@ function Footer() {
               © 2024 Bolt Market. All rights reserved.
             </p>
             <div className="flex gap-6 text-sm">
-              <a href="#" className="text-dark-400 hover:text-white transition-colors">Privacy Policy</a>
-              <a href="#" className="text-dark-400 hover:text-white transition-colors">Terms of Service</a>
-              <a href="#" className="text-dark-400 hover:text-white transition-colors">Cookie Policy</a>
+              <Link to="/privacy" className="text-dark-400 hover:text-white transition-colors">Privacy Policy</Link>
+              <Link to="/terms" className="text-dark-400 hover:text-white transition-colors">Terms of Service</Link>
+              <Link to="/cookies" className="text-dark-400 hover:text-white transition-colors">Cookie Policy</Link>
             </div>
           </div>
         </div>
@@ -125,3 +118,27 @@ function Footer() {
 }
 
 export default Footer;
+
+function NewsletterSubscribe() {
+  const [email, setEmail] = useState('');
+
+  const handleSubscribe = () => {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert('Please enter a valid email');
+      return;
+    }
+    // Simple client-side subscribe: save to localStorage for demo
+    const list = JSON.parse(localStorage.getItem('newsletter') || '[]');
+    if (!list.includes(email)) list.push(email);
+    localStorage.setItem('newsletter', JSON.stringify(list));
+    alert('Subscribed — thank you!');
+    setEmail('');
+  };
+
+  return (
+    <div className="flex gap-2">
+      <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="Your email" className="flex-1 px-3 py-2 rounded-lg bg-dark-800 text-white placeholder-dark-500 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500" />
+      <button onClick={handleSubscribe} className="btn btn-primary btn-sm">Subscribe</button>
+    </div>
+  );
+}

@@ -16,6 +16,8 @@ export const LoansPage = ({ userId }) => {
     reason: '',
     employment_status: 'employed',
     annual_income: '',
+    phone_number: '',
+    id_number: '',
     requested_term_months: 12,
   });
 
@@ -41,7 +43,7 @@ export const LoansPage = ({ userId }) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: name === 'amount' || name === 'annual_income' ? parseFloat(value) : value,
+      [name]: (name === 'amount' || name === 'annual_income') ? (value === '' ? '' : parseFloat(value)) : value,
     }));
   };
 
@@ -49,6 +51,13 @@ export const LoansPage = ({ userId }) => {
     e.preventDefault();
     setIsLoading(true);
     try {
+      // Basic validation
+      if (!formData.phone_number || !formData.id_number) {
+        alert('Please provide your phone number and ID number');
+        setIsLoading(false);
+        return;
+      }
+
       const application = await loansService.applyForLoan({
         borrower_id: userId,
         ...formData,
@@ -60,6 +69,8 @@ export const LoansPage = ({ userId }) => {
         reason: '',
         employment_status: 'employed',
         annual_income: '',
+        phone_number: '',
+        id_number: '',
         requested_term_months: 12,
       });
       
@@ -265,6 +276,34 @@ const LoanApplicationForm = ({ formData, onInputChange, onSubmit, isLoading }) =
                 value={formData.annual_income}
                 onChange={onInputChange}
                 placeholder="500,000"
+                required
+                className="input dark:bg-dark-800 dark:text-white dark:border-dark-600"
+              />
+            </div>
+
+            {/* Phone Number */}
+            <div>
+              <label className="block text-sm font-medium text-dark-900 dark:text-white mb-2">Phone Number</label>
+              <input
+                type="tel"
+                name="phone_number"
+                value={formData.phone_number}
+                onChange={onInputChange}
+                placeholder="07XXXXXXXX"
+                required
+                className="input dark:bg-dark-800 dark:text-white dark:border-dark-600"
+              />
+            </div>
+
+            {/* ID Number */}
+            <div>
+              <label className="block text-sm font-medium text-dark-900 dark:text-white mb-2">ID Number</label>
+              <input
+                type="text"
+                name="id_number"
+                value={formData.id_number}
+                onChange={onInputChange}
+                placeholder="ID / National ID"
                 required
                 className="input dark:bg-dark-800 dark:text-white dark:border-dark-600"
               />

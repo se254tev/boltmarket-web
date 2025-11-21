@@ -57,8 +57,16 @@ function SellerDashboard() {
       return;
     }
 
+    // ensure price is a number
+    const priceNum = parseFloat(formData.price);
+    if (Number.isNaN(priceNum) || priceNum <= 0) {
+      alert('Please enter a valid price in KES');
+      return;
+    }
+
     try {
-      const { data: created } = await listingsAPI.createListing(formData);
+      const payload = { ...formData, price: priceNum };
+      const { data: created } = await listingsAPI.createListing(payload);
       const createdItem = created?.data || created;
       setListings([createdItem, ...listings]);
     } catch (err) {
@@ -359,7 +367,7 @@ function SellerDashboard() {
 
           {/* Price */}
           <div>
-            <label className="block text-sm font-medium text-dark-900 mb-2">Price ($) *</label>
+            <label className="block text-sm font-medium text-dark-900 mb-2">Price (KES) *</label>
             <input 
               type="number"
               name="price"
@@ -382,6 +390,14 @@ function SellerDashboard() {
               placeholder="https://..."
               className="input"
             />
+            {formData.image && (
+              <div className="mt-3">
+                <p className="text-xs text-dark-600 mb-2">Preview</p>
+                <div className="w-full h-40 bg-dark-50 overflow-hidden rounded">
+                  <img src={formData.image} alt="preview" className="w-full h-full object-cover" />
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Description */}
