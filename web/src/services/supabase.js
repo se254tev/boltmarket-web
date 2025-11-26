@@ -51,6 +51,7 @@ export const listingsAPI = {
       .select('*')
       .eq('id', id)
       .single(),
+  // (Chat-related helpers were moved to `chatAPI` below)
 };
 
 /**
@@ -117,8 +118,8 @@ export const chatAPI = {
         }
         return { data, error };
       });
-  },
-};
+    },
+  };
 
 /**
  * Escrow API - Transaction management
@@ -167,32 +168,9 @@ export const escrowAPI = {
 };
 
 /**
- * Payments API
+ * Payments API (merged below)
+ * Single consolidated `paymentsAPI` is defined later in the file.
  */
-export const paymentsAPI = {
-  // Create payment record
-  createPayment: (data) =>
-    supabase
-      .from('payments')
-      .insert([{ ...data, created_at: new Date() }])
-      .select(),
-
-  // Get payment by ID
-  getPayment: (id) =>
-    supabase
-      .from('payments')
-      .select('*')
-      .eq('id', id)
-      .single(),
-
-  // Get user payments
-  getUserPayments: (userId) =>
-    supabase
-      .from('payments')
-      .select('*')
-      .eq('user_id', userId)
-      .order('created_at', { ascending: false }),
-};
 
 /**
  * Loans API - Soft loans feature

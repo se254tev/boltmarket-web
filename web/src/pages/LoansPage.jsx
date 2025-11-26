@@ -243,3 +243,5 @@ const DetailRow = ({ label, value, highlight }) => (
     <span className={`font-bold ${highlight ? 'text-primary-600 dark:text-primary-300' : 'text-dark-900 dark:text-white'}`}>{value}</span>
   </div>
 );
+
+export default LoansPage;
