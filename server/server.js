@@ -1,5 +1,7 @@
 require('dotenv').config();
 const express = require('express');
+const fs = require('fs');
+const path = require('path');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 
@@ -36,6 +38,21 @@ app.use('/api/mpesa', mpesaRoutes);
 app.use('/api/loans', loansRoutes);
 app.use('/api/rewards', rewardsRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Serve static frontend (production build) if available and provide SPA fallback
+try {
+  const staticPath = path.join(__dirname, '..', 'web', 'dist');
+  if (fs.existsSync(staticPath)) {
+    app.use(express.static(staticPath));
+    // Important: keep this AFTER API routes so API endpoints are not overridden
+    app.get('*', (req, res) => {
+      res.sendFile(path.join(staticPath, 'index.html'));
+    });
+    console.log('Serving static frontend from', staticPath);
+  }
+} catch (err) {
+  console.warn('Could not configure static frontend serving:', err && err.message);
+}
 
 app.use(errorHandler);
 
