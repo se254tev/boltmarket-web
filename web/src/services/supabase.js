@@ -22,6 +22,20 @@ export const listingsAPI = {
       .subscribe();
   },
 
+  // Get all listings
+  getAllListings: () =>
+    supabase
+      .from('listings')
+      .select('*')
+      .order('created_at', { ascending: false }),
+
+  // Get my listings (current user)
+  getMyListings: () =>
+    supabase
+      .from('listings')
+      .select('*')
+      .order('created_at', { ascending: false }),
+
   // Create new listing
   createListing: (data) =>
     supabase

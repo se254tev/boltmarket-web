@@ -21,6 +21,70 @@ import BulkUploadCSV from '../components/BulkUploadCSV';
 import AnalyticsPanel from '../components/AnalyticsPanel';
 
 /**
+ * Helper: Create empty listing form
+ */
+function getEmptyForm() {
+  return {
+    title: '',
+    price: '',
+    category: 'Fashion',
+    images: [],
+    description: '',
+    delivery_fee: 0,
+    delivery_method: 'pickup',
+    delivery_time: '',
+    quantity: 0,
+    variants: [],
+    featured: false,
+    draft: false,
+    schedule_at: null,
+  };
+}
+
+/**
+ * Helper: Variant editor sub-component
+ */
+function VariantEditor({ variants, onChange }) {
+  const handleAdd = () => {
+    onChange([...variants, { name: '', options: [''] }]);
+  };
+
+  const handleRemove = (idx) => {
+    onChange(variants.filter((_, i) => i !== idx));
+  };
+
+  return (
+    <div className="space-y-2">
+      {variants.map((v, idx) => (
+        <div key={idx} className="flex gap-2 items-center">
+          <input
+            type="text"
+            placeholder="e.g., Size"
+            value={v.name}
+            onChange={(e) => {
+              const newVars = [...variants];
+              newVars[idx].name = e.target.value;
+              onChange(newVars);
+            }}
+            className="input flex-1"
+          />
+          <button
+            type="button"
+            onClick={() => handleRemove(idx)}
+            className="btn btn-outline btn-sm"
+          >
+            Remove
+          </button>
+        </div>
+      ))}
+      <button type="button" onClick={handleAdd} className="btn btn-secondary btn-sm">
+        Add Variant
+      </button>
+    </div>
+  );
+}
+
+/**
  * SellerDashboard Component
  * Seller dashboard for managing listings and creating new ones
  */
