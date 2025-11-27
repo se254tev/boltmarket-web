@@ -53,26 +53,49 @@ function SellerDashboard() {
     const loadAll = async () => {
       setIsLoading(true);
       try {
-        const [{ data: listingsResp }, sellerResp, ordersResp, payoutsResp] = await Promise.all([
-          listingsAPI.getMyListings(),
-          sellersAPI.getCurrentProfile(),
-          sellersAPI.getCurrentProfile().then(async (r) => {
-            const id = r?.data?.id || null;
-            if (!id) return { data: [] };
-            return ordersAPI.getUserOrders(id);
-          }),
-          sellersAPI.getCurrentProfile().then(async (r) => {
-            const id = r?.data?.id || null;
-            if (!id) return { data: [] };
-            return payoutsAPI.getPayoutsForSeller(id);
-          }),
-        ]);
+        // Load with individual error handling to prevent one failure from blocking all
+        let listingsData = [];
+        let sellerData = null;
+        let ordersData = [];
+        let payoutsData = [];
+
+        try {
+          const res = await listingsAPI.getMyListings();
+          listingsData = res?.data || res || [];
+        } catch (err) {
+          console.warn('Failed to load listings:', err.message);
+        }
+
+        try {
+          const res = await sellersAPI.getCurrentProfile();
+          sellerData = res?.data || res || null;
+        } catch (err) {
+          console.warn('Failed to load seller profile:', err.message);
+        }
+
+        try {
+          if (sellerData?.id) {
+            const res = await ordersAPI.getUserOrders(sellerData.id);
+            ordersData = res?.data || res || [];
+          }
+        } catch (err) {
+          console.warn('Failed to load orders:', err.message);
+        }
+
+        try {
+          if (sellerData?.id) {
+            const res = await payoutsAPI.getPayoutsForSeller(sellerData.id);
+            payoutsData = res?.data || res || [];
+          }
+        } catch (err) {
+          console.warn('Failed to load payouts:', err.message);
+        }
 
         if (!mounted) return;
-        setListings(listingsResp?.data || listingsResp || []);
-        setSeller(sellerResp?.data || sellerResp || null);
-        setOrders(ordersResp?.data || ordersResp || []);
-        setPayouts(payoutsResp?.data || payoutsResp || []);
+        setListings(listingsData);
+        setSeller(sellerData);
+        setOrders(ordersData);
+        setPayouts(payoutsData);
       } catch (err) {
         console.error('Seller dashboard load error', err);
       } finally {
