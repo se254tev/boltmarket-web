@@ -119,6 +119,45 @@ export const chatAPI = {
         return { data, error };
       });
     },
+  
+  // Create a conversation explicitly between two users. Returns the conversation record.
+  createConversation: async (userId1, userId2) => {
+    try {
+      const participantIds = [userId1, userId2].sort();
+      // first try to find existing conversation
+      const { data: existing, error: existErr } = await supabase
+        .from('conversations')
+        .select('*')
+        .or(`and(participant_1.eq.${participantIds[0]},participant_2.eq.${participantIds[1]}),and(participant_1.eq.${participantIds[1]},participant_2.eq.${participantIds[0]})`)
+        .maybeSingle();
+
+      if (existErr) {
+        // continue to try creation if selection failed for not found; otherwise return error
+        console.debug('createConversation selection error', existErr);
+      }
+
+      if (existing && existing.id) return { data: existing };
+
+      // create a new conversation
+      const { data, error } = await supabase
+        .from('conversations')
+        .insert([
+          {
+            participant_1: participantIds[0],
+            participant_2: participantIds[1],
+            created_at: new Date(),
+            updated_at: new Date(),
+          },
+        ])
+        .select()
+        .single();
+
+      if (error) return { error };
+      return { data };
+    } catch (err) {
+      return { error: err };
+    }
+  },
   };
 
 /**
