@@ -23,11 +23,22 @@ export const listingsAPI = {
   },
 
   // Get all listings
-  getAllListings: () =>
-    supabase
-      .from('listings')
-      .select('*')
-      .order('created_at', { ascending: false }),
+  getAllListings: async () => {
+    // Try the expected 'listings' table first; fall back to 'items' if not present
+    try {
+      const res = await supabase.from('listings').select('*').order('created_at', { ascending: false });
+      if (res && (res.data !== undefined || res.error)) return res;
+    } catch (err) {
+      console.debug('listings table query failed, will attempt items table', err && err.message);
+    }
+
+    try {
+      const fallback = await supabase.from('items').select('*').order('created_at', { ascending: false });
+      return fallback;
+    } catch (err) {
+      return { data: null, error: err };
+    }
+  },
 
   // Get my listings (current user)
   getMyListings: () =>

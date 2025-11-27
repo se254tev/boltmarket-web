@@ -8,14 +8,15 @@ const RUNTIME_CACHE = 'bolt-market-runtime-v1';
 const ASSETS_CACHE = 'bolt-market-assets-v1';
 const API_CACHE = 'bolt-market-api-v1';
 
-// Assets to cache on install
+// Inline SVG icon used for notifications and manifest fallback
+const ICON_192 = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%230ea5e9' width='192' height='192'/%3E%3Ctext x='50%25' y='50%25' font-size='80' font-weight='bold' fill='white' text-anchor='middle' dominant-baseline='central'%3EBM%3C/text%3E%3C/svg%3E";
+
+// Assets to cache on install (do not rely on external PNG files)
 const STATIC_ASSETS = [
   '/',
   '/index.html',
   '/styles/globals.css',
   '/manifest.json',
-  '/icon-192x192.png',
-  '/icon-512x512.png',
 ];
 
 // Install event - cache static assets
@@ -178,8 +179,8 @@ self.addEventListener('push', (event) => {
   const data = event.data ? event.data.json() : {};
   const options = {
     body: data.body || 'You have a new notification',
-    icon: '/icon-192x192.png',
-    badge: '/icon-192x192.png',
+    icon: ICON_192,
+    badge: ICON_192,
     tag: data.tag || 'notification',
     requireInteraction: data.requireInteraction || false,
     data: data.data || {},

@@ -43,8 +43,21 @@ function HomePage() {
           categoriesAPI.getAllCategories(),
         ]);
 
-        setTrendingItems(itemsResp?.data || itemsResp || []);
-        setCategories(catsResp?.data || catsResp || []);
+        // Normalize listings response to an array
+        let items = [];
+        if (Array.isArray(itemsResp)) items = itemsResp;
+        else if (itemsResp && Array.isArray(itemsResp.data)) items = itemsResp.data;
+        else if (itemsResp && Array.isArray(itemsResp.rows)) items = itemsResp.rows;
+        else items = itemsResp || [];
+
+        // Normalize categories response
+        let cats = [];
+        if (Array.isArray(catsResp)) cats = catsResp;
+        else if (catsResp && Array.isArray(catsResp.data)) cats = catsResp.data;
+        else cats = catsResp || [];
+
+        setTrendingItems(items);
+        setCategories(cats);
       } catch (err) {
         console.error('Home load error', err);
         setError(err);
