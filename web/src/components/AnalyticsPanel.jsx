@@ -1,6 +1,36 @@
-import React, { useEffect, useState } from 'react';
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, CartesianGrid, Legend } from 'recharts';
+import React, { useEffect, useState, useMemo } from 'react';
 import supabase from '../services/supabase';
+
+// Lightweight SVG line chart (small data sets)
+function SimpleLineChart({ data = [], width = '100%', height = 220 }){
+  const viewW = 600, viewH = 220;
+  const points = data.map((d, i) => ({ x: (i/(Math.max(1,data.length-1)))*viewW, y:  viewH - (d.sales / Math.max(...data.map(x=>x.sales),1))* (viewH-20) }));
+  const path = points.map((p,i)=> `${i===0? 'M':'L'} ${p.x} ${p.y}`).join(' ');
+  return (
+    <svg viewBox={`0 0 ${viewW} ${viewH}`} style={{ width, height }} role="img" aria-label="line chart">
+      <rect x="0" y="0" width="100%" height="100%" fill="transparent" />
+      <path d={path} fill="none" stroke="#8884d8" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+      {points.map((p,i)=> (<circle key={i} cx={p.x} cy={p.y} r={3} fill="#8884d8" />))}
+    </svg>
+  );
+}
+
+function SimpleBarList({ data = [] }){
+  const max = Math.max(...data.map(d=>d.count), 1);
+  return (
+    <div className="space-y-3">
+      {data.map(d=> (
+        <div key={d.id} className="flex items-center gap-3">
+          <div className="w-36 text-sm truncate">Item #{d.id}</div>
+          <div className="flex-1 bg-slate-100 rounded overflow-hidden h-4">
+            <div style={{ width: `${(d.count/max)*100}%` }} className="bg-emerald-500 h-4"></div>
+          </div>
+          <div className="w-12 text-right text-sm">{d.count}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export default function AnalyticsPanel({ sellerId, listings = [], orders = [] }){
   const [monthlyData, setMonthlyData] = useState([]);
@@ -12,12 +42,10 @@ export default function AnalyticsPanel({ sellerId, listings = [], orders = [] })
     let mounted = true;
     (async ()=>{
       try{
-        // Fetch order_items for listings owned by seller
         const listingIds = (listings||[]).map(l => l.id).filter(Boolean);
-        if (listingIds.length === 0){ setMonthlyData([]); setTopItems([]); return; }
+        if (listingIds.length === 0){ setMonthlyData([]); setTopItems([]); setRevenue(0); return; }
 
         const { data: items } = await supabase.from('order_items').select('*, orders(created_at)').in('listing_id', listingIds);
-        // compute monthly sales
         const months = {};
         const itemCounts = {};
         let totalRev = 0;
@@ -39,35 +67,21 @@ export default function AnalyticsPanel({ sellerId, listings = [], orders = [] })
     return ()=> mounted = false;
   }, [sellerId, listings, orders]);
 
+  const monthlyMemo = useMemo(()=> monthlyData, [monthlyData]);
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <div className="card card-base">
         <h4 className="font-semibold mb-3">Monthly Sales</h4>
         <div style={{ width: '100%', height: 300 }}>
-          <ResponsiveContainer>
-            <LineChart data={monthlyData}>
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="month" />
-              <YAxis />
-              <Tooltip />
-              <Line type="monotone" dataKey="sales" stroke="#8884d8" strokeWidth={2} />
-            </LineChart>
-          </ResponsiveContainer>
+          <SimpleLineChart data={monthlyMemo} height={300} />
         </div>
       </div>
 
       <div className="card card-base">
         <h4 className="font-semibold mb-3">Top Selling Items</h4>
         <div style={{ width: '100%', height: 300 }}>
-          <ResponsiveContainer>
-            <BarChart data={topItems} layout="vertical">
-              <CartesianGrid strokeDasharray="3 3" />
-              <XAxis type="number" />
-              <YAxis dataKey="id" type="category" width={120} />
-              <Tooltip />
-              <Bar dataKey="count" fill="#82ca9d" />
-            </BarChart>
-          </ResponsiveContainer>
+          <SimpleBarList data={topItems} />
         </div>
       </div>
 
