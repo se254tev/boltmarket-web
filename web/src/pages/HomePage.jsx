@@ -37,30 +37,32 @@ function HomePage() {
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
+      setError(null);
       try {
-        const [itemsResp, catsResp] = await Promise.all([
-          listingsAPI.getAllListings(),
-          categoriesAPI.getAllCategories(),
-        ]);
+        // Load listings
+        const listingsResp = await listingsAPI.getAllListings();
+        if (listingsResp.error) {
+          console.error('Failed to load listings:', listingsResp.error);
+          setTrendingItems([]);
+        } else {
+          const items = Array.isArray(listingsResp.data) ? listingsResp.data : [];
+          setTrendingItems(items);
+        }
 
-        // Normalize listings response to an array
-        let items = [];
-        if (Array.isArray(itemsResp)) items = itemsResp;
-        else if (itemsResp && Array.isArray(itemsResp.data)) items = itemsResp.data;
-        else if (itemsResp && Array.isArray(itemsResp.rows)) items = itemsResp.rows;
-        else items = itemsResp || [];
-
-        // Normalize categories response
-        let cats = [];
-        if (Array.isArray(catsResp)) cats = catsResp;
-        else if (catsResp && Array.isArray(catsResp.data)) cats = catsResp.data;
-        else cats = catsResp || [];
-
-        setTrendingItems(items);
-        setCategories(cats);
+        // Load categories
+        const catsResp = await categoriesAPI.getAllCategories();
+        if (catsResp.error) {
+          console.error('Failed to load categories:', catsResp.error);
+          setCategories([]);
+        } else {
+          const cats = Array.isArray(catsResp.data) ? catsResp.data : [];
+          setCategories(cats);
+        }
       } catch (err) {
-        console.error('Home load error', err);
+        console.error('Home page load exception:', err);
         setError(err);
+        setTrendingItems([]);
+        setCategories([]);
       } finally {
         setIsLoading(false);
       }
@@ -121,18 +123,22 @@ function HomePage() {
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {categories.slice(0, 8).map((category) => (
-              <CategoryBadge
-                key={category.id}
-                name={category.name}
-                icon={category.icon}
-                isSelected={selectedCategory === category.id}
-                onClick={() => {
-                  setSelectedCategory(selectedCategory === category.id ? null : category.id);
-                  navigate(`/browse?category=${category.id}`);
-                }}
-              />
-            ))}
+            {Array.isArray(categories) && categories.length > 0 ? (
+              categories.slice(0, 8).map((category) => (
+                <CategoryBadge
+                  key={category.id}
+                  name={category.name}
+                  icon={category.icon}
+                  isSelected={selectedCategory === category.id}
+                  onClick={() => {
+                    setSelectedCategory(selectedCategory === category.id ? null : category.id);
+                    navigate(`/browse?category=${category.id}`);
+                  }}
+                />
+              ))
+            ) : (
+              <p className="text-dark-600 col-span-full">No categories available</p>
+            )}
           </div>
         </div>
       </section>
@@ -158,18 +164,20 @@ function HomePage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {isLoading ? (
-              <div>Loading...</div>
+              <div className="text-dark-600">Loading items...</div>
             ) : error ? (
-              <div className="text-red-600">Failed to load items</div>
-            ) : (
+              <div className="text-red-600">Failed to load items. Please try refreshing the page.</div>
+            ) : Array.isArray(trendingItems) && trendingItems.length > 0 ? (
               trendingItems.map((item) => (
-                <div key={item.id} onClick={() => navigate(`/item/${item.id}`)}>
+                <div key={item.id} onClick={() => navigate(`/item/${item.id}`)} className="cursor-pointer">
                   <ItemCard 
                     item={{ ...item, isFavorite: favorites[item.id] }}
                     onFavorite={handleFavorite}
                   />
                 </div>
               ))
+            ) : (
+              <div className="text-dark-600">No items available yet</div>
             )}
           </div>
         </div>

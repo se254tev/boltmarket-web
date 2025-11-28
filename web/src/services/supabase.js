@@ -22,21 +22,34 @@ export const listingsAPI = {
       .subscribe();
   },
 
-  // Get all listings
+  // Get all listings with proper error handling
   getAllListings: async () => {
-    // Try the expected 'listings' table first; fall back to 'items' if not present
     try {
-      const res = await supabase.from('listings').select('*').order('created_at', { ascending: false });
-      if (res && (res.data !== undefined || res.error)) return res;
-    } catch (err) {
-      console.debug('listings table query failed, will attempt items table', err && err.message);
-    }
+      // Try the expected 'listings' table first
+      const { data, error } = await supabase
+        .from('listings')
+        .select('*')
+        .order('created_at', { ascending: false });
 
-    try {
-      const fallback = await supabase.from('items').select('*').order('created_at', { ascending: false });
-      return fallback;
+      if (error) {
+        console.warn('Listings table query error (will try items table):', error.message);
+        // Fall back to 'items' table
+        const fallback = await supabase
+          .from('items')
+          .select('*')
+          .order('created_at', { ascending: false });
+        
+        if (fallback.error) {
+          console.error('Both listings and items table queries failed:', fallback.error);
+          return { data: [], error: fallback.error };
+        }
+        return { data: fallback.data || [], error: null };
+      }
+
+      return { data: data || [], error: null };
     } catch (err) {
-      return { data: null, error: err };
+      console.error('getAllListings exception:', err && err.message);
+      return { data: [], error: err };
     }
   },
 

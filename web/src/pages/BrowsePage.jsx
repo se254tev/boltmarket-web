@@ -32,25 +32,35 @@ function BrowsePage() {
   useEffect(() => {
     const load = async () => {
       setIsLoading(true);
+      setError(null);
       try {
-        const params = {};
-        const q = searchParams.get('q');
-        const category = searchParams.get('category');
-        if (q) params.q = q;
-        if (category) params.category = category;
+        // Fetch listings
+        const listingsResp = await listingsAPI.getAllListings();
+        if (listingsResp.error) {
+          console.error('Failed to load listings:', listingsResp.error);
+          setItems([]);
+          setFilteredItems([]);
+        } else {
+          const fetchedItems = Array.isArray(listingsResp.data) ? listingsResp.data : [];
+          setItems(fetchedItems);
+          setFilteredItems(fetchedItems);
+        }
 
-        const [itemsResp, catsResp] = await Promise.all([
-          listingsAPI.getAllListings(),
-          categoriesAPI.getAllCategories(),
-        ]);
-
-        const fetchedItems = itemsResp?.data || itemsResp || [];
-        setItems(fetchedItems);
-        setFilteredItems(fetchedItems);
-        setCategories(catsResp?.data || catsResp || []);
+        // Fetch categories
+        const catsResp = await categoriesAPI.getAllCategories();
+        if (catsResp.error) {
+          console.error('Failed to load categories:', catsResp.error);
+          setCategories([]);
+        } else {
+          const cats = Array.isArray(catsResp.data) ? catsResp.data : [];
+          setCategories(cats);
+        }
       } catch (err) {
-        console.error('Browse load error', err);
+        console.error('Browse page load exception:', err);
         setError(err);
+        setItems([]);
+        setFilteredItems([]);
+        setCategories([]);
       } finally {
         setIsLoading(false);
       }
@@ -61,13 +71,19 @@ function BrowsePage() {
 
   // Apply filters whenever they change
   useEffect(() => {
+    // Ensure items is always an array before spreading
+    if (!Array.isArray(items)) {
+      setFilteredItems([]);
+      return;
+    }
+
     let result = [...items];
 
     // Search filter
     if (searchQuery) {
       result = result.filter(item => 
-        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        item.category.toLowerCase().includes(searchQuery.toLowerCase())
+        item.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.category?.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
